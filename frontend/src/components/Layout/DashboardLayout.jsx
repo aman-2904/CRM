@@ -31,6 +31,7 @@ const DashboardLayout = ({ children }) => {
         { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
         { name: 'Team', href: '/admin/employees', icon: Users },
         { name: 'Reports', href: '/admin/reports', icon: PieChart },
+        { name: 'Activity', href: '/admin/activity', icon: CheckSquare },
         { name: 'Settings', href: '/admin/settings', icon: Settings },
     ] : [
         { name: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },

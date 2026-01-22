@@ -6,6 +6,7 @@ import followupsRouter from './followups.js';
 import dealsRouter from './deals.js';
 import employeesRouter from './employees.js';
 import reportsRouter from './reports.js';
+import activitiesRouter from './activities.js';
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/followups', followupsRouter);
 router.use('/deals', dealsRouter);
 router.use('/employees', employeesRouter);
 router.use('/reports', reportsRouter);
+router.use('/activities', activitiesRouter);
 
 export default router;

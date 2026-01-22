@@ -13,6 +13,7 @@ import Tasks from './pages/Tasks';
 import Deals from './pages/Deals';
 import Employees from './pages/Employees';
 import Reports from './pages/Reports';
+import ActivityLog from './pages/ActivityLog';
 
 // Main App Component
 
@@ -103,6 +104,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <Reports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/activity"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <ActivityLog />
               </ProtectedRoute>
             }
           />
