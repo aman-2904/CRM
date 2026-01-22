@@ -7,14 +7,16 @@ import { cn } from '../utils/cn';
 const ActivityLog = () => {
     const [activities, setActivities] = useState([]);
     const [stats, setStats] = useState(null);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filters, setFilters] = useState({ type: '', from: '', to: '' });
+    const [filters, setFilters] = useState({ type: '', user_id: '', from: '', to: '' });
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const params = {};
             if (filters.type) params.type = filters.type;
+            if (filters.user_id) params.user_id = filters.user_id;
             if (filters.from) params.from = filters.from;
             if (filters.to) params.to = filters.to;
 
@@ -34,6 +36,10 @@ const ActivityLog = () => {
 
     useEffect(() => {
         fetchData();
+        // Fetch users for filter dropdown
+        api.get('/employees').then(res => {
+            setUsers(res.data.data || []);
+        }).catch(err => console.error('Failed to fetch users', err));
     }, []);
 
     const handleApplyFilters = () => {
@@ -145,6 +151,16 @@ const ActivityLog = () => {
                 >
                     {activityTypes.map(t => (
                         <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                </select>
+                <select
+                    value={filters.user_id}
+                    onChange={(e) => setFilters({ ...filters, user_id: e.target.value })}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                >
+                    <option value="">All Users</option>
+                    {users.map(u => (
+                        <option key={u.id} value={u.id}>{u.full_name || u.email}</option>
                     ))}
                 </select>
                 <input
