@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import api from '../services/api';
-import { Activity, User, Calendar, Filter, Clock, Edit, DollarSign, Phone, Mail, LogIn, LogOut, CheckCircle } from 'lucide-react';
+import { Activity, User, Calendar, Filter, Clock, Edit, Phone, Mail, LogIn, LogOut, CheckCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const ActivityLog = () => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import StatsCard from '../components/Dashboard/StatsCard';
 import api from '../services/api';
-import { Users, DollarSign, TrendingUp, Activity, AlertTriangle } from 'lucide-react';
+import { Users, IndianRupee, TrendingUp, Activity, AlertTriangle } from 'lucide-react';
 import {
     AreaChart,
     Area,
@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     const [stats, setStats] = useState([
         { title: "Total Leads", value: "—", icon: Users, trend: "Loading...", trendUp: true },
         { title: "Active Deals", value: "—", icon: Activity, trend: "Loading...", trendUp: true },
-        { title: "Won Revenue", value: "—", icon: DollarSign, trend: "Loading...", trendUp: true },
+        { title: "Won Revenue", value: "—", icon: IndianRupee, trend: "Loading...", trendUp: true },
         { title: "Conversion Rate", value: "—", icon: TrendingUp, trend: "Loading...", trendUp: true },
     ]);
     const [leadSourceData, setLeadSourceData] = useState([]);
@@ -53,7 +53,7 @@ const AdminDashboard = () => {
                 setStats([
                     { title: "Total Leads", value: String(totalLeads), icon: Users, trend: `${convertedLeads} converted`, trendUp: true },
                     { title: "Active Deals", value: String(dealStats.inPipeline || 0), icon: Activity, trend: `${dealStats.total || 0} total`, trendUp: true },
-                    { title: "Won Revenue", value: formatCurrency(dealStats.wonValue || 0), icon: DollarSign, trend: `${dealStats.won || 0} deals won`, trendUp: true },
+                    { title: "Won Revenue", value: formatCurrency(dealStats.wonValue || 0), icon: IndianRupee, trend: `${dealStats.won || 0} deals won`, trendUp: true },
                     { title: "Conversion Rate", value: `${conversionRate}%`, icon: TrendingUp, trend: `${dealStats.lost || 0} lost`, trendUp: parseFloat(conversionRate) > 20 },
                 ]);
 
@@ -80,7 +80,7 @@ const AdminDashboard = () => {
     }, []);
 
     const formatCurrency = (num) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num || 0);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num || 0);
     };
 
     const getStageColor = (stage) => {

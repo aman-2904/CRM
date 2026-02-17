@@ -3,7 +3,7 @@ import DashboardLayout from '../components/Layout/DashboardLayout';
 import LeadFormModal from '../components/Leads/LeadFormModal';
 import DealModal from '../components/Deals/DealModal';
 import api from '../services/api';
-import { Plus, Search, Edit2, Trash2, Phone, Mail, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Leads = () => {
@@ -167,7 +167,7 @@ const Leads = () => {
                                                     className="text-green-600 hover:text-green-900 mr-3"
                                                     title="Convert to Deal"
                                                 >
-                                                    <DollarSign className="h-5 w-5" />
+                                                    <IndianRupee className="h-5 w-5" />
                                                 </button>
                                             )}
                                             {role === 'admin' && (

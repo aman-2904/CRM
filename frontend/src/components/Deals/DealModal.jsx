@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
-import { X, DollarSign, Calendar, Building } from 'lucide-react';
+import { X, IndianRupee, Calendar, Building } from 'lucide-react';
 import api from '../../services/api';
 
 const DealModal = ({ isOpen, onClose, dealToEdit, leadToConvert, onSuccess }) => {
@@ -140,9 +140,9 @@ const DealModal = ({ isOpen, onClose, dealToEdit, leadToConvert, onSuccess }) =>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Deal Value ($)</label>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Deal Value (₹)</label>
                                         <div className="relative">
-                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <input
                                                 type="number"
                                                 name="amount"

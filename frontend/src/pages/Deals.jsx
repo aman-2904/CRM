@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import DealModal from '../components/Deals/DealModal';
 import api from '../services/api';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Building, Calendar, User } from 'lucide-react';
+import { IndianRupee, TrendingUp, TrendingDown, Plus, Building, Calendar, User } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const Deals = () => {
@@ -51,7 +51,7 @@ const Deals = () => {
     const getDealsForStage = (stageId) => deals.filter(d => d.stage === stageId);
 
     const formatCurrency = (num) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num || 0);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num || 0);
     };
 
     return (
@@ -76,7 +76,7 @@ const Deals = () => {
                     <div className="bg-white rounded-2xl p-5 border border-gray-100">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                                <DollarSign className="h-5 w-5 text-blue-600" />
+                                <IndianRupee className="h-5 w-5 text-blue-600" />
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Pipeline Value</p>
@@ -154,7 +154,7 @@ const Deals = () => {
                                                 </div>
                                             )}
                                             <div className="flex items-center text-sm font-bold text-green-600">
-                                                <DollarSign className="h-3.5 w-3.5 mr-0.5" />
+                                                <IndianRupee className="h-3.5 w-3.5 mr-0.5" />
                                                 {formatCurrency(deal.amount)}
                                             </div>
                                             {deal.expected_close_date && (

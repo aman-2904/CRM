@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import api from '../services/api';
-import { Users, TrendingUp, DollarSign, Award, ToggleLeft, ToggleRight, Shield, User } from 'lucide-react';
+import { Users, TrendingUp, IndianRupee, Award, ToggleLeft, ToggleRight, Shield, User } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const Employees = () => {
@@ -57,7 +57,7 @@ const Employees = () => {
     };
 
     const formatCurrency = (num) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num || 0);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num || 0);
     };
 
     // Calculate team totals
@@ -115,7 +115,7 @@ const Employees = () => {
                 <div className="bg-white rounded-2xl p-5 border border-gray-100">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                            <DollarSign className="h-5 w-5 text-emerald-600" />
+                            <IndianRupee className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Team Revenue</p>

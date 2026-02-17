@@ -74,9 +74,9 @@ export const exportToPDF = (elementId, title) => {
 
 // Format currency
 export const formatCurrency = (num) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
         maximumFractionDigits: 0
     }).format(num || 0);
 };

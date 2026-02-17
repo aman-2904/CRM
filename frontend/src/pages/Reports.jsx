@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import api from '../services/api';
 import { exportToCSV, exportToPDF, formatCurrency } from '../utils/exportUtils';
-import { FileText, Download, Calendar, Users, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { FileText, Download, Calendar, Users, IndianRupee, TrendingUp, BarChart3 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
@@ -41,7 +41,7 @@ const Reports = () => {
 
     const tabs = [
         { id: 'leads', label: 'Lead Report', icon: Users },
-        { id: 'sales', label: 'Sales Report', icon: DollarSign },
+        { id: 'sales', label: 'Sales Report', icon: IndianRupee },
         { id: 'employees', label: 'Team Performance', icon: BarChart3 }
     ];
 
