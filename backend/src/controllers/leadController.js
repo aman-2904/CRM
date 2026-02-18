@@ -162,6 +162,34 @@ export const deleteLead = async (req, res, next) => {
     }
 };
 
+export const deleteLeadsBulk = async (req, res, next) => {
+    try {
+        const { ids } = req.body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'No IDs provided' });
+        }
+
+        // Admin only check
+        if (req.user.role !== 'admin') {
+            const error = new Error('Unauthorized: Only admins can delete leads');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        const { error } = await supabase
+            .from('leads')
+            .delete()
+            .in('id', ids);
+
+        if (error) throw error;
+
+        res.json({ success: true, message: `${ids.length} leads deleted` });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getLeadHistory = async (req, res, next) => {
     try {
         const { id } = req.params;

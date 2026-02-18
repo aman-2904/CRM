@@ -1,5 +1,5 @@
 import express from 'express';
-import { createLead, getLeads, updateLead, deleteLead, getLeadHistory } from '../controllers/leadController.js';
+import { createLead, getLeads, updateLead, deleteLead, getLeadHistory, deleteLeadsBulk } from '../controllers/leadController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.use(authMiddleware);
 
 router.get('/', getLeads);
 router.post('/', createLead);
+router.post('/bulk-delete', deleteLeadsBulk);
 router.put('/:id', updateLead);
 router.delete('/:id', deleteLead);
 router.get('/:id/history', getLeadHistory);

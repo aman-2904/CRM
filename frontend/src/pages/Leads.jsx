@@ -13,6 +13,7 @@ const Leads = () => {
     const [selectedLead, setSelectedLead] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [leadToConvert, setLeadToConvert] = useState(null);
+    const [selectedLeads, setSelectedLeads] = useState(new Set());
     const [isDealModalOpen, setIsDealModalOpen] = useState(false);
     const { role, loading: authLoading } = useAuth();
 
@@ -56,6 +57,39 @@ const Leads = () => {
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (selectedLeads.size === 0) return;
+        if (!window.confirm(`Are you sure you want to delete ${selectedLeads.size} selected leads?`)) return;
+
+        try {
+            await api.post('/leads/bulk-delete', { ids: Array.from(selectedLeads) });
+            setSelectedLeads(new Set()); // Clear selection
+            fetchLeads(); // Refresh list
+        } catch (error) {
+            console.error('Bulk delete failed', error);
+            alert('Failed to delete leads');
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedLeads.size === filteredLeads.length) {
+            setSelectedLeads(new Set());
+        } else {
+            setSelectedLeads(new Set(filteredLeads.map(l => l.id)));
+        }
+    };
+
+    const toggleSelectLead = (id) => {
+        const newSelected = new Set(selectedLeads);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedLeads(newSelected);
+    };
+
+
     // Filter Logic
     const filteredLeads = (leads || []).filter(lead => {
         const firstName = lead.first_name || '';
@@ -87,13 +121,24 @@ const Leads = () => {
         <DashboardLayout>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Leads Management</h1>
-                <button
-                    onClick={handleAddLead}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-                >
-                    <Plus className="-ml-1 mr-2 h-5 w-5" />
-                    Add New Lead
-                </button>
+                <div className="flex gap-2">
+                    {selectedLeads.size > 0 && role === 'admin' && (
+                        <button
+                            onClick={handleBulkDelete}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+                        >
+                            <Trash2 className="-ml-1 mr-2 h-5 w-5" />
+                            Delete Selected ({selectedLeads.size})
+                        </button>
+                    )}
+                    <button
+                        onClick={handleAddLead}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                    >
+                        <Plus className="-ml-1 mr-2 h-5 w-5" />
+                        Add New Lead
+                    </button>
+                </div>
             </div>
 
             {/* Search */}
@@ -121,6 +166,16 @@ const Leads = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
+                                    {role === 'admin' && (
+                                        <th className="px-6 py-3 text-left">
+                                            <input
+                                                type="checkbox"
+                                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                                checked={filteredLeads.length > 0 && selectedLeads.size === filteredLeads.length}
+                                                onChange={toggleSelectAll}
+                                            />
+                                        </th>
+                                    )}
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
@@ -130,7 +185,17 @@ const Leads = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredLeads.map((lead) => (
-                                    <tr key={lead.id} className="hover:bg-gray-50">
+                                    <tr key={lead.id} className={`hover:bg-gray-50 ${selectedLeads.has(lead.id) ? 'bg-blue-50' : ''}`}>
+                                        {role === 'admin' && (
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <input
+                                                    type="checkbox"
+                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                                    checked={selectedLeads.has(lead.id)}
+                                                    onChange={() => toggleSelectLead(lead.id)}
+                                                />
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
