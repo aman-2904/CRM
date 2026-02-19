@@ -44,7 +44,7 @@ A full-stack CRM application built with React, Node.js, Express, and Supabase.
 ```bash
 cd backend
 npm install
-cp .env.example .env  # Configure Supabase credentials
+cp .env.example .env  # Credentials are pre-filled — no changes needed
 npm run dev
 ```
 
@@ -52,9 +52,11 @@ npm run dev
 ```bash
 cd frontend
 npm install
-cp .env.example .env  # Configure API and Supabase
+cp .env.example .env  # Credentials are pre-filled — no changes needed
 npm run dev
 ```
+
+> The backend runs on **port 5001** and the frontend on **port 5173**.
 
 ---
 
