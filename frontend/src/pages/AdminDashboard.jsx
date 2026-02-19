@@ -3,6 +3,7 @@ import DashboardLayout from '../components/Layout/DashboardLayout';
 import StatsCard from '../components/Dashboard/StatsCard';
 import api from '../services/api';
 import { Users, IndianRupee, TrendingUp, Activity, AlertTriangle } from 'lucide-react';
+import SheetSyncPanel from '../components/Dashboard/SheetSyncPanel';
 import {
     AreaChart,
     Area,
@@ -179,6 +180,11 @@ const AdminDashboard = () => {
                         <div className="p-8 text-center text-gray-400">No deals yet</div>
                     )}
                 </div>
+            </div>
+
+            {/* Google Sheets Sync */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <SheetSyncPanel />
             </div>
         </DashboardLayout>
     );

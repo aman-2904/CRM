@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
+import { startSheetSyncScheduler } from './services/sheetSyncService.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -50,6 +51,7 @@ app.use(errorHandler);
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+    startSheetSyncScheduler();
 });
 
 // Handle unhandled promise rejections

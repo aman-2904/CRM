@@ -21,7 +21,6 @@ const DashboardLayout = ({ children }) => {
 
     const handleLogout = async () => {
         await logout();
-        // Redirect handled by AuthContext/ProtectedRoute normally 
     };
 
     const navItems = role === 'admin' ? [
@@ -139,7 +138,7 @@ const DashboardLayout = ({ children }) => {
                     </nav>
                 </div>
 
-                {/* Logout Button (Static at bottom) */}
+                {/* Bottom Buttons */}
                 <div className="flex-shrink-0 p-4 border-t border-white/5 bg-slate-950/30">
                     <button
                         onClick={handleLogout}

@@ -3,7 +3,7 @@ import DashboardLayout from '../components/Layout/DashboardLayout';
 import LeadFormModal from '../components/Leads/LeadFormModal';
 import DealModal from '../components/Deals/DealModal';
 import api from '../services/api';
-import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Leads = () => {
@@ -16,6 +16,8 @@ const Leads = () => {
     const [selectedLeads, setSelectedLeads] = useState(new Set());
     const [isDealModalOpen, setIsDealModalOpen] = useState(false);
     const { role, loading: authLoading } = useAuth();
+    const [syncing, setSyncing] = useState(false);
+    const [syncMsg, setSyncMsg] = useState(null);
 
     // Fetch Leads
     const fetchLeads = async () => {
@@ -40,6 +42,24 @@ const Leads = () => {
     const handleAddLead = () => {
         setSelectedLead(null);
         setIsModalOpen(true);
+    };
+
+    const handleSyncSheet = async () => {
+        setSyncing(true);
+        setSyncMsg(null);
+        try {
+            await api.post('/sheets/sync-now');
+            setSyncMsg({ type: 'success', text: 'Sync started! Refreshing leads...' });
+            setTimeout(async () => {
+                await fetchLeads();
+                setSyncMsg(null);
+            }, 3000);
+        } catch {
+            setSyncMsg({ type: 'error', text: 'Sync failed. Please try again.' });
+            setTimeout(() => setSyncMsg(null), 3000);
+        } finally {
+            setSyncing(false);
+        }
     };
 
     const handleEditLead = (lead) => {
@@ -121,7 +141,13 @@ const Leads = () => {
         <DashboardLayout>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Leads Management</h1>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    {syncMsg && (
+                        <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${syncMsg.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                            {syncMsg.text}
+                        </span>
+                    )}
                     {selectedLeads.size > 0 && role === 'admin' && (
                         <button
                             onClick={handleBulkDelete}
@@ -129,6 +155,16 @@ const Leads = () => {
                         >
                             <Trash2 className="-ml-1 mr-2 h-5 w-5" />
                             Delete Selected ({selectedLeads.size})
+                        </button>
+                    )}
+                    {role === 'admin' && (
+                        <button
+                            onClick={handleSyncSheet}
+                            disabled={syncing}
+                            className="inline-flex items-center px-4 py-2 border border-green-600 rounded-md shadow-sm text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <RefreshCw className={`-ml-1 mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+                            {syncing ? 'Syncing...' : 'Sync Sheet'}
                         </button>
                     )}
                     <button
