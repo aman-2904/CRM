@@ -409,7 +409,7 @@ const Leads = () => {
                                             {lead.source || '-'}
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                            <div className="flex items-center justify-end space-x-1 transition-all duration-300">
                                                 <button onClick={() => handleEditLead(lead)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit Lead">
                                                     <Edit2 className="h-4.5 w-4.5" />
                                                 </button>
