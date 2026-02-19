@@ -3,7 +3,7 @@ import DashboardLayout from '../components/Layout/DashboardLayout';
 import LeadFormModal from '../components/Leads/LeadFormModal';
 import DealModal from '../components/Deals/DealModal';
 import api from '../services/api';
-import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calendar, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Leads = () => {
@@ -18,6 +18,30 @@ const Leads = () => {
     const { role, loading: authLoading } = useAuth();
     const [syncing, setSyncing] = useState(false);
     const [syncMsg, setSyncMsg] = useState(null);
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [datePreset, setDatePreset] = useState('all'); // all | today | yesterday | 7days | 30days | custom
+
+    const applyPreset = (preset) => {
+        setDatePreset(preset);
+        const now = new Date();
+        const toISO = (d) => d.toISOString().slice(0, 10);
+        if (preset === 'today') {
+            setDateFrom(toISO(now)); setDateTo(toISO(now));
+        } else if (preset === 'yesterday') {
+            const y = new Date(now); y.setDate(now.getDate() - 1);
+            setDateFrom(toISO(y)); setDateTo(toISO(y));
+        } else if (preset === '7days') {
+            const d = new Date(now); d.setDate(now.getDate() - 6);
+            setDateFrom(toISO(d)); setDateTo(toISO(now));
+        } else if (preset === '30days') {
+            const d = new Date(now); d.setDate(now.getDate() - 29);
+            setDateFrom(toISO(d)); setDateTo(toISO(now));
+        } else if (preset === 'all') {
+            setDateFrom(''); setDateTo('');
+        }
+        // 'custom' — don't change dates, let user pick
+    };
 
     // Fetch Leads
     const fetchLeads = async () => {
@@ -118,12 +142,35 @@ const Leads = () => {
         const company = lead.company || '';
         const search = searchTerm.toLowerCase();
 
-        return (
+        const matchesSearch = (
             firstName.toLowerCase().includes(search) ||
             lastName.toLowerCase().includes(search) ||
             email.toLowerCase().includes(search) ||
             company.toLowerCase().includes(search)
         );
+
+        // Date range filter
+        let matchesDate = true;
+        if (dateFrom || dateTo) {
+            const leadDate = lead.created_at ? new Date(lead.created_at) : null;
+            if (!leadDate) return false;
+            if (dateFrom) {
+                const from = new Date(dateFrom);
+                from.setHours(0, 0, 0, 0);
+                if (leadDate < from) matchesDate = false;
+            }
+            if (dateTo) {
+                const to = new Date(dateTo);
+                to.setHours(23, 59, 59, 999);
+                if (leadDate > to) matchesDate = false;
+            }
+        }
+
+        return matchesSearch && matchesDate;
+    }).sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+        const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+        return dateB - dateA;
     });
 
     const getStatusColor = (status) => {
@@ -177,18 +224,86 @@ const Leads = () => {
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="mb-6 relative max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+            {/* Search & Date Filters */}
+            <div className="mb-6 flex flex-col gap-3">
+                {/* Row 1: Search + Preset buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    {/* Search */}
+                    <div className="relative flex-1 max-w-md">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2"
+                            placeholder="Search by name, email, or company..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Preset Buttons */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {[['all', 'All'], ['today', 'Today'], ['yesterday', 'Yesterday'], ['7days', 'Last 7 Days'], ['30days', 'Last 30 Days'], ['custom', 'Custom']].map(([key, label]) => (
+                            <button
+                                key={key}
+                                onClick={() => applyPreset(key)}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${datePreset === key
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                        {/* Result count */}
+                        {datePreset !== 'all' && (
+                            <span className="text-xs text-gray-500 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full ml-1">
+                                {filteredLeads.length} result{filteredLeads.length !== 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
                 </div>
-                <input
-                    type="text"
-                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2"
-                    placeholder="Search leads by name, email, or company..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+
+                {/* Row 2: Custom date pickers (only when Custom is selected) */}
+                {datePreset === 'custom' && (
+                    <div className="flex items-center gap-2 flex-wrap pl-0">
+                        <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-md px-3 py-1.5">
+                            <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <input
+                                type="date"
+                                className="text-sm text-gray-700 border-none outline-none bg-transparent"
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.target.value)}
+                                placeholder="From"
+                            />
+                        </div>
+                        <span className="text-gray-400 text-sm">to</span>
+                        <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-md px-3 py-1.5">
+                            <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <input
+                                type="date"
+                                className="text-sm text-gray-700 border-none outline-none bg-transparent"
+                                value={dateTo}
+                                onChange={(e) => setDateTo(e.target.value)}
+                                placeholder="To"
+                            />
+                        </div>
+                        {(dateFrom || dateTo) && (
+                            <button
+                                onClick={() => { setDateFrom(''); setDateTo(''); }}
+                                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 rounded-md px-2 py-1.5 bg-red-50 hover:bg-red-100 transition-colors"
+                            >
+                                <X className="h-3.5 w-3.5" /> Clear
+                            </button>
+                        )}
+                        {(dateFrom || dateTo) && (
+                            <span className="text-xs text-gray-500 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full">
+                                {filteredLeads.length} result{filteredLeads.length !== 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Leads Table */}
@@ -255,7 +370,7 @@ const Leads = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {lead.company || '-'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 text-sm text-gray-500">
                                             {lead.source || '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

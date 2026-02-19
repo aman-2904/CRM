@@ -9,13 +9,13 @@ const IGNORED_COLUMNS = new Set([
     // ID column variants
     'Id', 'id', 'ID', 'F',
     // Standard Facebook metadata
-    'created_time', 'ad_id', 'ad_name', 'adset_id', 'adset_name',
-    'campaign_id', 'campaign_name', 'form_id', 'form_name', 'is_organic', 'platform',
+    'ad_id', 'ad_name', 'adset_id', 'adset_name',
+    'campaign_id', 'form_id', 'form_name', 'is_organic', 'platform',
 ]);
 
 // Columns that get explicitly mapped to CRM fields (not sent to notes)
 const MAPPED_COLUMNS = new Set([
-    'full_name', 'phone_number', 'please_enter_your_contact_no_', 'email',
+    'full_name', 'phone_number', 'please_enter_your_contact_no_', 'email', 'created_time', 'campaign_name',
 ]);
 
 // ─── Sync State ───────────────────────────────────────────────────────────────
@@ -35,15 +35,32 @@ export const syncState = {
  * This filters out sheets with misaligned columns or non-lead data.
  */
 function hasValidContact(row) {
+    const fullName = (row['full_name'] || '').trim().toLowerCase();
+
+    // 1. Filter out common sheet headers/garbage strings
+    const JUNK_NAMES = ['true', 'full_name', 'id', 'december_2025', 'january_2026', 'february_2026', 'march_2026', 'april_2026'];
+    if (JUNK_NAMES.includes(fullName)) return false;
+
+    // Heuristic: if name contains a month name and a year, it's likely a summary row/header
+    const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december', 'jan', 'feb', 'mar', 'apr', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const hasMonth = months.some(m => fullName.includes(m));
+    const hasYear = fullName.includes('2025') || fullName.includes('2026');
+    if (hasMonth && hasYear) return false;
+
     const email = (row['email'] || '').trim();
     const phone = (
         row['phone_number'] ||
         row['please_enter_your_contact_no_'] || ''
     ).trim();
 
-    const validEmail = email.includes('@');
-    // Facebook format: p:+91... ; manual entry: 9876543210 or +91...
-    const validPhone = phone.length >= 7 && /\d{5}/.test(phone);
+    // 2. Strict Email check (must have @ and a dot)
+    const validEmail = email.includes('@') && email.includes('.') &&
+        !email.includes(' ') && email.length > 5;
+
+    // 3. Strict Phone check (at least 7 digits)
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    const validPhone = cleanPhone.length >= 7;
+
     return validEmail || validPhone;
 }
 
@@ -82,7 +99,19 @@ function mapRowToLead(row) {
 
     const notes = extraParts.join(' | ');
 
-    return { first_name, last_name, email, phone, notes };
+    // created_time — the actual Facebook lead creation timestamp
+    // Parse it to a valid ISO string; fall back to null (Supabase will use now())
+    const rawCreatedTime = (row['created_time'] || '').trim();
+    let created_at = null;
+    if (rawCreatedTime) {
+        const parsed = new Date(rawCreatedTime);
+        if (!isNaN(parsed.getTime())) created_at = parsed.toISOString();
+    }
+
+    // campaign_name
+    const campaign_name = (row['campaign_name'] || '').trim();
+
+    return { first_name, last_name, email, phone, notes, created_at, campaign_name };
 }
 
 // ─── Fetch all sheets from a published Google Spreadsheet ────────────────────
@@ -213,11 +242,20 @@ export async function runSync() {
         // 6. Insert into Supabase
         const { error } = await supabase
             .from('leads')
-            .insert(newLeads.map(lead => ({
-                ...lead,
-                status: 'new',
-                source: 'Google Sheet',
-            })));
+            .insert(newLeads.map(lead => {
+                const record = {
+                    first_name: lead.first_name,
+                    last_name: lead.last_name,
+                    email: lead.email,
+                    phone: lead.phone,
+                    notes: lead.notes,
+                    status: 'new',
+                    source: lead.campaign_name ? `Google Sheet: ${lead.campaign_name}` : 'Google Sheet',
+                };
+                // Only set created_at if we have a valid date from the sheet
+                if (lead.created_at) record.created_at = lead.created_at;
+                return record;
+            }));
 
         if (error) throw error;
 
