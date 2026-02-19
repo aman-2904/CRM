@@ -9,14 +9,13 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 const allowedOrigins = [
-    process.env.CLIENT_URL,
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
     'http://localhost:5176',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5176'
-].filter(Boolean);
+];
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -56,7 +55,16 @@ const server = app.listen(PORT, () => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
     console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-    console.log(err.name, err.message);
+    console.log(err);
+    server.close(() => {
+        process.exit(1);
+    });
+});
+
+// Handle uncaught synchronous exceptions
+process.on('uncaughtException', (err) => {
+    console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+    console.log(err);
     server.close(() => {
         process.exit(1);
     });
