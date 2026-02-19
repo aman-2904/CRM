@@ -100,18 +100,24 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
                         transition
                         className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
                     >
-                        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <div className="flex justify-between items-center mb-5 border-b border-gray-100 pb-4">
-                                <DialogTitle className="text-xl font-bold text-gray-900">
-                                    {leadToEdit ? 'Edit Lead Details' : 'Add New Lead'}
+                        <div className="bg-slate-50/50 px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                            <div>
+                                <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">
+                                    {leadToEdit ? 'Edit Lead Profile' : 'Create New Lead'}
                                 </DialogTitle>
-                                <button
-                                    onClick={onClose}
-                                    className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500 transition-colors"
-                                >
-                                    <X className="h-6 w-6" />
-                                </button>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                    {leadToEdit?.source || 'Manual Entry'}
+                                </p>
                             </div>
+                            <button
+                                onClick={onClose}
+                                className="rounded-xl p-2 text-slate-400 hover:bg-white hover:text-slate-600 hover:shadow-sm transition-all border border-transparent hover:border-slate-100"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="px-6 py-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
 
                             {error && (
                                 <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
@@ -120,142 +126,172 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
                             )}
 
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
-                                        <input
-                                            type="text"
-                                            name="first_name"
-                                            required
-                                            value={formData.first_name}
-                                            onChange={handleChange}
-                                            placeholder="John"
-                                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
-                                        <input
-                                            type="text"
-                                            name="last_name"
-                                            required
-                                            value={formData.last_name}
-                                            onChange={handleChange}
-                                            placeholder="Doe"
-                                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            placeholder="john@example.com"
-                                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            placeholder="+1 (555) 000-0000"
-                                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                                        />
-                                    </div>
-                                </div>
-
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Company</label>
-                                    <input
-                                        type="text"
-                                        name="company"
-                                        value={formData.company}
-                                        onChange={handleChange}
-                                        placeholder="Company Name"
-                                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                                    />
-                                </div>
+                                    <h4 className="text-xs font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center">
+                                        <span className="w-6 h-px bg-blue-100 mr-2" /> Basic Information
+                                    </h4>
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">First Name</label>
+                                                <input
+                                                    type="text"
+                                                    name="first_name"
+                                                    required
+                                                    value={formData.first_name}
+                                                    onChange={handleChange}
+                                                    placeholder="John"
+                                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Last Name</label>
+                                                <input
+                                                    type="text"
+                                                    name="last_name"
+                                                    required
+                                                    value={formData.last_name}
+                                                    onChange={handleChange}
+                                                    placeholder="Doe"
+                                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                                />
+                                            </div>
+                                        </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Lead Status</label>
-                                        <select
-                                            name="status"
-                                            value={formData.status}
-                                            onChange={handleChange}
-                                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none bg-white"
-                                        >
-                                            <option value="new">New</option>
-                                            <option value="contacted">Contacted</option>
-                                            <option value="interested">Interested</option>
-                                            <option value="converted">Converted</option>
-                                            <option value="lost">Lost</option>
-                                        </select>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    placeholder="john@example.com"
+                                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Phone Number</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleChange}
+                                                    placeholder="+1 (555) 000-0000"
+                                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Assigned To</label>
-                                        <select
-                                            name="assigned_to"
-                                            value={formData.assigned_to}
-                                            onChange={handleChange}
-                                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none bg-white"
-                                        >
-                                            <option value="">Select Employee</option>
-                                            {employees.map(emp => (
-                                                <option key={emp.id} value={emp.id}>
-                                                    {emp.full_name || emp.email}
-                                                </option>
-                                            ))}
-                                        </select>
+                                </div>
+
+                                <div className="pt-2">
+                                    <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center">
+                                        <span className="w-6 h-px bg-emerald-100 mr-2" /> Business Details
+                                    </h4>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Company</label>
+                                            <input
+                                                type="text"
+                                                name="company"
+                                                value={formData.company}
+                                                onChange={handleChange}
+                                                placeholder="Company Name"
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Lead Status</label>
+                                                <select
+                                                    name="status"
+                                                    value={formData.status}
+                                                    onChange={handleChange}
+                                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none"
+                                                >
+                                                    <option value="new">New</option>
+                                                    <option value="contacted">Contacted</option>
+                                                    <option value="interested">Interested</option>
+                                                    <option value="converted">Converted</option>
+                                                    <option value="lost">Lost</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Assigned To</label>
+                                                <select
+                                                    name="assigned_to"
+                                                    value={formData.assigned_to}
+                                                    onChange={handleChange}
+                                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none"
+                                                >
+                                                    <option value="">Unassigned</option>
+                                                    {employees.map(emp => (
+                                                        <option key={emp.id} value={emp.id}>
+                                                            {emp.full_name || emp.email}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Source</label>
-                                    <input
-                                        type="text"
-                                        name="source"
-                                        value={formData.source}
-                                        onChange={handleChange}
-                                        placeholder="e.g. Website, LinkedIn, Referral"
-                                        className="w-full rounded-xl border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    />
-                                </div>
+                                {leadToEdit?.source?.startsWith('Google Sheet') && (
+                                    <div className="pt-2">
+                                        <h4 className="text-xs font-black text-amber-600 uppercase tracking-widest mb-4 flex items-center">
+                                            <span className="w-6 h-px bg-amber-100 mr-2" /> Sheet Information
+                                        </h4>
+                                        <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 grid grid-cols-1 gap-3">
+                                            {leadToEdit.notes?.split('|').filter(part => part.includes(':')).map((part, i) => {
+                                                const [label, ...valParts] = part.split(':');
+                                                const value = valParts.join(':').trim();
+                                                const cleanLabel = label.trim().replace(/_/g, ' ').replace(/\?|:|_/g, '');
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Notes</label>
+                                                // Skip basic info that's already in the form
+                                                if (['first_name', 'last_name', 'email', 'phone', 'full_name'].some(k => label.toLowerCase().includes(k))) return null;
+
+                                                return (
+                                                    <div key={i} className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">{cleanLabel}</span>
+                                                        <span className="text-sm font-semibold text-slate-700 mt-0.5 line-clamp-2">{value || '-'}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="pt-2">
+                                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                                        <span className="w-6 h-px bg-slate-100 mr-2" /> Manual Notes
+                                    </h4>
                                     <textarea
                                         name="notes"
-                                        rows={2}
+                                        rows={3}
                                         value={formData.notes}
                                         onChange={handleChange}
                                         placeholder="Add any additional details..."
-                                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none"
+                                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none placeholder:text-slate-300"
                                     />
                                 </div>
 
-                                <div className="mt-8 flex justify-end gap-3 pt-2">
+                                <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-slate-100">
                                     <button
                                         type="button"
-                                        className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                                        className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
                                         onClick={onClose}
                                     >
-                                        Cancel
+                                        Dismiss
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="px-8 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                                        className="px-10 py-2.5 text-sm font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-xl shadow-blue-200/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center"
                                     >
-                                        {loading ? 'Saving...' : 'Save Lead'}
+                                        {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3 text-white" />}
+                                        {loading ? 'Processing...' : (leadToEdit ? 'Update Profile' : 'Create Profile')}
                                     </button>
                                 </div>
                             </form>

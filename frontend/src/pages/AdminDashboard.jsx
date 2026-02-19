@@ -95,16 +95,25 @@ const AdminDashboard = () => {
 
     return (
         <DashboardLayout>
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Overview</h1>
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Executive Dashboard</h1>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1 flex items-center">
+                        <Activity className="w-3 h-3 mr-1.5 text-blue-500" /> Real-time Performance Overview
+                    </p>
+                </div>
+            </div>
 
             {/* Missed Tasks Alert */}
             {missedTasks.length > 0 && (
-                <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="mb-8 bg-rose-50/50 backdrop-blur-sm border border-rose-100 rounded-[2rem] p-5 flex items-start gap-4 shadow-xl shadow-rose-100/20 animate-in slide-in-from-top-4 duration-500">
+                    <div className="w-10 h-10 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-200/50 ring-2 ring-white">
+                        <AlertTriangle className="h-5 w-5 text-white" />
+                    </div>
                     <div>
-                        <h4 className="font-bold text-red-800">{missedTasks.length} overdue follow-up{missedTasks.length > 1 ? 's' : ''} need attention!</h4>
-                        <p className="text-sm text-red-600 mt-1">
-                            {missedTasks.map(t => t.leads?.first_name || 'Lead').join(', ')}
+                        <h4 className="font-black text-rose-900 text-sm uppercase tracking-tight">{missedTasks.length} Overdue Follow-ups!</h4>
+                        <p className="text-xs font-semibold text-rose-600 mt-1 leading-relaxed">
+                            {missedTasks.map(t => t.leads?.first_name || 'Lead').slice(0, 3).join(', ')} {missedTasks.length > 3 ? 'and others' : ''} require immediate attention.
                         </p>
                     </div>
                 </div>
@@ -120,8 +129,11 @@ const AdminDashboard = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* Lead Sources Pie Chart */}
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Lead Sources</h3>
+                <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-slate-200/50 rounded-[2rem] p-7 transition-all duration-500 hover:shadow-blue-100/50">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Lead Distribution</h3>
+                        <div className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100">Sources</div>
+                    </div>
                     <div className="h-72">
                         {leadSourceData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
@@ -130,55 +142,70 @@ const AdminDashboard = () => {
                                         data={leadSourceData}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        fill="#8884d8"
-                                        paddingAngle={5}
+                                        innerRadius={70}
+                                        outerRadius={90}
+                                        fill="#3b82f6"
+                                        paddingAngle={8}
                                         dataKey="value"
-                                        label={({ name, value }) => `${name}: ${value}`}
+                                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                                     >
                                         {leadSourceData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="focus:outline-none" />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '1rem', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                        itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b' }}
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                                No lead source data yet
+                            <div className="flex flex-col items-center justify-center h-full text-slate-300">
+                                <Users className="w-12 h-12 opacity-20 mb-2" />
+                                <span className="text-sm font-bold opacity-40">Awaiting lead data...</span>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Recent Deals */}
-                <div className="bg-white rounded-lg shadow">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <h3 className="text-lg font-medium text-gray-900">Recent Deals</h3>
+                <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-emerald-100/50">
+                    <div className="px-7 py-6 border-b border-slate-100 flex items-center justify-between bg-white/50">
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Live Deals</h3>
+                        <div className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">Revenue Flow</div>
                     </div>
-                    {recentDeals.length > 0 ? (
-                        <ul className="divide-y divide-gray-200">
-                            {recentDeals.map((deal) => (
-                                <li key={deal.id} className="px-6 py-4">
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900">{deal.name || 'Unnamed Deal'}</p>
-                                            <p className="text-sm text-gray-500">{deal.leads?.company || deal.leads?.first_name || 'No lead'}</p>
+                    <div className="max-h-72 overflow-y-auto custom-scrollbar">
+                        {recentDeals.length > 0 ? (
+                            <ul className="divide-y divide-slate-100">
+                                {recentDeals.map((deal) => (
+                                    <li key={deal.id} className="px-7 py-5 hover:bg-white/50 transition-colors group">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-sm group-hover:bg-blue-50 group-hover:text-blue-500 transition-all">
+                                                    {(deal.name?.[0] || 'D').toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{deal.name || 'Unnamed Deal'}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{deal.leads?.first_name || 'Prospect'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-black text-emerald-600">{formatCurrency(deal.amount)}</p>
+                                                <span className={`inline-block px-2.5 py-0.5 mt-1 text-[9px] font-black uppercase tracking-widest rounded-full border transition-all ${getStageColor(deal.stage).replace('100', '50').replace('800', '600')}`}>
+                                                    {deal.stage?.replace('_', ' ')}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-green-600">{formatCurrency(deal.amount)}</p>
-                                            <span className={`px-2 py-1 text-xs rounded-full capitalize ${getStageColor(deal.stage)}`}>
-                                                {deal.stage?.replace('_', ' ')}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <div className="p-8 text-center text-gray-400">No deals yet</div>
-                    )}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-72 text-slate-300">
+                                <Activity className="w-12 h-12 opacity-20 mb-2" />
+                                <span className="text-sm font-bold opacity-40">No deals in pipeline</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

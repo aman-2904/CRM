@@ -175,13 +175,26 @@ const Leads = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'new': return 'bg-blue-100 text-blue-800';
-            case 'contacted': return 'bg-yellow-100 text-yellow-800';
-            case 'interested': return 'bg-purple-100 text-purple-800';
-            case 'converted': return 'bg-green-100 text-green-800';
-            case 'lost': return 'bg-gray-100 text-gray-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'new': return 'bg-blue-50 text-blue-600 border-blue-100 shadow-[0_0_8px_rgba(59,130,246,0.2)]';
+            case 'contacted': return 'bg-amber-50 text-amber-600 border-amber-100 shadow-[0_0_8px_rgba(245,158,11,0.2)]';
+            case 'interested': return 'bg-purple-50 text-purple-600 border-purple-100 shadow-[0_0_8px_rgba(168,85,247,0.2)]';
+            case 'converted': return 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-[0_0_8px_rgba(16,185,129,0.2)]';
+            case 'lost': return 'bg-slate-50 text-slate-500 border-slate-200';
+            default: return 'bg-gray-50 text-gray-500 border-gray-200';
         }
+    };
+
+    const getAvatarGradient = (name) => {
+        const colors = [
+            'from-blue-500 to-indigo-600',
+            'from-purple-500 to-violet-600',
+            'from-emerald-500 to-teal-600',
+            'from-amber-500 to-orange-600',
+            'from-rose-500 to-pink-600',
+            'from-cyan-500 to-blue-600'
+        ];
+        const index = (name?.charCodeAt(0) || 0) % colors.length;
+        return colors[index];
     };
 
     return (
@@ -235,7 +248,7 @@ const Leads = () => {
                         </div>
                         <input
                             type="text"
-                            className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2"
+                            className="w-full pl-11 pr-4 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300"
                             placeholder="Search by name, email, or company..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -243,26 +256,30 @@ const Leads = () => {
                     </div>
 
                     {/* Preset Buttons */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                        {[['all', 'All'], ['today', 'Today'], ['yesterday', 'Yesterday'], ['7days', 'Last 7 Days'], ['30days', 'Last 30 Days'], ['custom', 'Custom']].map(([key, label]) => (
+                    <div className="flex items-center gap-1.5 p-1 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl overflow-hidden">
+                        {[['all', 'All'], ['today', 'Today'], ['yesterday', 'Yesterday'], ['7days', '7d'], ['30days', '30d'], ['custom', 'Custom']].map(([key, label]) => (
                             <button
                                 key={key}
                                 onClick={() => applyPreset(key)}
-                                className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${datePreset === key
-                                    ? 'bg-blue-600 text-white border-blue-600'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 ${datePreset === key
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200 scale-[1.02]'
+                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/80'
                                     }`}
                             >
                                 {label}
                             </button>
                         ))}
-                        {/* Result count */}
-                        {datePreset !== 'all' && (
-                            <span className="text-xs text-gray-500 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full ml-1">
-                                {filteredLeads.length} result{filteredLeads.length !== 1 ? 's' : ''}
-                            </span>
-                        )}
                     </div>
+
+                    {/* Result count */}
+                    {datePreset !== 'all' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/50 backdrop-blur-sm border border-blue-100 rounded-xl animate-in fade-in duration-500">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="text-xs font-bold text-blue-700">
+                                {filteredLeads.length} {filteredLeads.length === 1 ? 'Lead' : 'Leads'}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Row 2: Custom date pickers (only when Custom is selected) */}
@@ -306,13 +323,21 @@ const Leads = () => {
                 )}
             </div>
 
-            {/* Leads Table */}
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="min-w-full divide-y divide-gray-200">
+            {/* Leads Table Container */}
+            <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-slate-200/50 sm:rounded-3xl overflow-hidden transition-all duration-500">
+                <div className="min-w-full divide-y divide-slate-100">
                     {loading ? (
-                        <div className="p-10 text-center text-gray-500">Loading leads...</div>
+                        <div className="p-20 flex flex-col items-center justify-center space-y-4">
+                            <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
+                            <p className="text-sm font-medium text-slate-400">Loading your leads...</p>
+                        </div>
                     ) : filteredLeads.length === 0 ? (
-                        <div className="p-10 text-center text-gray-500">No leads found.</div>
+                        <div className="p-20 text-center flex flex-col items-center justify-center space-y-3">
+                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center">
+                                <Search className="h-8 w-8 text-slate-300" />
+                            </div>
+                            <p className="text-slate-400 font-medium">No leads match your search criteria</p>
+                        </div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
@@ -327,70 +352,82 @@ const Leads = () => {
                                             />
                                         </th>
                                     )}
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Company</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Source</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredLeads.map((lead) => (
-                                    <tr key={lead.id} className={`hover:bg-gray-50 ${selectedLeads.has(lead.id) ? 'bg-blue-50' : ''}`}>
+                                    <tr key={lead.id} className={`group hover:bg-blue-50/30 transition-all duration-300 ${selectedLeads.has(lead.id) ? 'bg-blue-50/50' : ''}`}>
                                         {role === 'admin' && (
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-6 py-5 whitespace-nowrap">
                                                 <input
                                                     type="checkbox"
-                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                                    className="rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500 h-4.5 w-4.5 transition-all cursor-pointer"
                                                     checked={selectedLeads.has(lead.id)}
                                                     onChange={() => toggleSelectLead(lead.id)}
                                                 />
                                             </td>
                                         )}
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-5 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                <div className={`flex-shrink-0 h-11 w-11 rounded-2xl bg-gradient-to-br ${getAvatarGradient(lead.first_name)} flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-200/20 group-hover:scale-110 transition-transform duration-300 ring-2 ring-white`}>
                                                     {(lead.first_name?.[0] || '?').toUpperCase()}
                                                     {(lead.last_name?.[0] || '?').toUpperCase()}
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">{lead.first_name} {lead.last_name}</div>
-                                                    <div className="text-sm text-gray-500 flex items-center space-x-2">
-                                                        {lead.email && <span className="flex items-center mr-2"><Mail className="h-3 w-3 mr-1" />{lead.email}</span>}
-                                                        {lead.phone && <span className="flex items-center"><Phone className="h-3 w-3 mr-1" />{lead.phone}</span>}
+                                                    <div className="text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">{lead.first_name} {lead.last_name}</div>
+                                                    <div className="text-xs font-medium text-slate-500 flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-1">
+                                                        {lead.email && (
+                                                            <span className="flex items-center hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap">
+                                                                <Mail className="h-3.5 w-3.5 mr-1.5 text-blue-500/70" />
+                                                                {lead.email}
+                                                            </span>
+                                                        )}
+                                                        {lead.phone && (
+                                                            <span className="flex items-center hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap">
+                                                                <Phone className="h-3.5 w-3.5 mr-1.5 text-emerald-500/70" />
+                                                                {lead.phone}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getStatusColor(lead.status)}`}>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className={`px-3 py-1 scale-95 border inline-flex text-[10px] font-bold rounded-full capitalize transition-all duration-300 ${getStatusColor(lead.status)}`}>
                                                 {lead.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {lead.company || '-'}
+                                        <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-slate-500">
+                                            {lead.company || <span className="text-slate-300 italic">-</span>}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                        <td className="px-6 py-5 text-sm font-semibold text-slate-800 leading-relaxed">
                                             {lead.source || '-'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button onClick={() => handleEditLead(lead)} className="text-blue-600 hover:text-blue-900 mr-3">
-                                                <Edit2 className="h-5 w-5" />
-                                            </button>
-                                            {lead.status !== 'converted' && (
-                                                <button
-                                                    onClick={() => { setLeadToConvert(lead); setIsDealModalOpen(true); }}
-                                                    className="text-green-600 hover:text-green-900 mr-3"
-                                                    title="Convert to Deal"
-                                                >
-                                                    <IndianRupee className="h-5 w-5" />
+                                        <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                                <button onClick={() => handleEditLead(lead)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit Lead">
+                                                    <Edit2 className="h-4.5 w-4.5" />
                                                 </button>
-                                            )}
-                                            {role === 'admin' && (
-                                                <button onClick={() => handleDeleteLead(lead.id)} className="text-red-600 hover:text-red-900">
-                                                    <Trash2 className="h-5 w-5" />
-                                                </button>
-                                            )}
+                                                {lead.status !== 'converted' && (
+                                                    <button
+                                                        onClick={() => { setLeadToConvert(lead); setIsDealModalOpen(true); }}
+                                                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                                                        title="Convert to Deal"
+                                                    >
+                                                        <IndianRupee className="h-4.5 w-4.5" />
+                                                    </button>
+                                                )}
+                                                {role === 'admin' && (
+                                                    <button onClick={() => handleDeleteLead(lead.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Delete Lead">
+                                                        <Trash2 className="h-4.5 w-4.5" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
