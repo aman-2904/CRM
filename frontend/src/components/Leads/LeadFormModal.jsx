@@ -45,7 +45,7 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
                 status: leadToEdit.status || 'new',
                 source: leadToEdit.source || '',
                 notes: leadToEdit.notes || '',
-                assigned_to: leadToEdit.assigned_to || '',
+                assigned_to: leadToEdit.assigned_to || null,
             });
         } else {
             setFormData({
@@ -73,10 +73,15 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
         setError('');
 
         try {
+            // Convert empty string to null for UUID fields
+            const payload = {
+                ...formData,
+                assigned_to: formData.assigned_to || null,
+            };
             if (leadToEdit) {
-                await api.put(`/leads/${leadToEdit.id}`, formData);
+                await api.put(`/leads/${leadToEdit.id}`, payload);
             } else {
-                await api.post('/leads', formData);
+                await api.post('/leads', payload);
             }
             onSuccess();
             onClose();
@@ -212,6 +217,7 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
                                                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none"
                                                 >
                                                     <option value="new">New</option>
+                                                    <option value="attempt_to_call">Attempt to Call</option>
                                                     <option value="contacted">Contacted</option>
                                                     <option value="interested">Interested</option>
                                                     <option value="converted">Converted</option>

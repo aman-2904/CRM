@@ -176,6 +176,7 @@ const Leads = () => {
     const getStatusColor = (status) => {
         switch (status) {
             case 'new': return 'bg-blue-50 text-blue-600 border-blue-100 shadow-[0_0_8px_rgba(59,130,246,0.2)]';
+            case 'attempt_to_call': return 'bg-orange-50 text-orange-600 border-orange-100 shadow-[0_0_8px_rgba(234,88,12,0.2)]';
             case 'contacted': return 'bg-amber-50 text-amber-600 border-amber-100 shadow-[0_0_8px_rgba(245,158,11,0.2)]';
             case 'interested': return 'bg-purple-50 text-purple-600 border-purple-100 shadow-[0_0_8px_rgba(168,85,247,0.2)]';
             case 'converted': return 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-[0_0_8px_rgba(16,185,129,0.2)]';

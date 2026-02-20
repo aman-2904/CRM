@@ -23,7 +23,7 @@ create table public.profiles (
 create table public.leads (
   id uuid primary key default uuid_generate_v4(),
   assigned_to uuid references public.profiles(id),
-  status text check (status in ('new', 'contacted', 'interested', 'converted', 'lost')) default 'new',
+  status text check (status in ('new', 'attempt_to_call', 'contacted', 'interested', 'converted', 'lost')) default 'new',
   first_name text not null,
   last_name text,
   email text,
