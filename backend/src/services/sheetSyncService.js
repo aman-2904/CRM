@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { parse } from 'csv-parse/sync';
 import supabase from '../config/supabase.js';
+import { pickEmployee } from './workflowService.js';
 
 // ─── Column Config ────────────────────────────────────────────────────────────
 
@@ -239,23 +240,27 @@ export async function runSync() {
             return;
         }
 
-        // 6. Insert into Supabase
+        // 6. Insert into Supabase (with auto-assignment)
+        const recordsToInsert = await Promise.all(newLeads.map(async (lead) => {
+            const source = lead.campaign_name ? `Google Sheet: ${lead.campaign_name}` : 'Google Sheet';
+            const assigned_to = await pickEmployee(source);
+            const record = {
+                first_name: lead.first_name,
+                last_name: lead.last_name,
+                email: lead.email,
+                phone: lead.phone,
+                notes: lead.notes,
+                status: 'new',
+                source,
+                assigned_to: assigned_to || null,
+            };
+            if (lead.created_at) record.created_at = lead.created_at;
+            return record;
+        }));
+
         const { error } = await supabase
             .from('leads')
-            .insert(newLeads.map(lead => {
-                const record = {
-                    first_name: lead.first_name,
-                    last_name: lead.last_name,
-                    email: lead.email,
-                    phone: lead.phone,
-                    notes: lead.notes,
-                    status: 'new',
-                    source: lead.campaign_name ? `Google Sheet: ${lead.campaign_name}` : 'Google Sheet',
-                };
-                // Only set created_at if we have a valid date from the sheet
-                if (lead.created_at) record.created_at = lead.created_at;
-                return record;
-            }));
+            .insert(recordsToInsert);
 
         if (error) throw error;
 

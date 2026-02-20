@@ -1,13 +1,16 @@
 import supabase from '../config/supabase.js';
+import { pickEmployee } from '../services/workflowService.js';
 
 export const createLead = async (req, res, next) => {
     try {
         const { first_name, last_name, email, phone, company, source, notes, status, assigned_to } = req.body;
         const userId = req.user.id;
 
-        // Create Lead
-        // Note: Clean the assigned_to to null if it's an empty string to avoid UUID errors
-        const cleanedAssignedTo = assigned_to && assigned_to !== '' ? assigned_to : userId;
+        // Auto-assign if no employee explicitly chosen
+        let cleanedAssignedTo = assigned_to && assigned_to !== '' ? assigned_to : null;
+        if (!cleanedAssignedTo) {
+            cleanedAssignedTo = await pickEmployee(source) || userId;
+        }
 
         const { data, error } = await supabase
             .from('leads')
@@ -58,10 +61,10 @@ export const getLeads = async (req, res, next) => {
             .select('*, profiles!leads_assigned_to_fkey(full_name)')
             .order('created_at', { ascending: false });
 
-        // If we wanted to restrict employees:
-        // if (req.user.role !== 'admin') {
-        //    query = query.eq('assigned_to', req.user.id);
-        // }
+        // Admin sees all, Employee sees only assigned leads
+        if (req.user.role !== 'admin') {
+            query = query.eq('assigned_to', req.user.id);
+        }
 
         const { data, error } = await query;
         if (error) throw error;

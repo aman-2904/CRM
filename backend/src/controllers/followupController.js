@@ -48,6 +48,9 @@ export const getFollowups = async (req, res, next) => {
         // Filters
         if (assigned_to) {
             query = query.eq('assigned_to', assigned_to);
+        } else if (req.user.role !== 'admin') {
+            // Enforce assigned_to for employees
+            query = query.eq('assigned_to', req.user.id);
         }
 
         if (status) {

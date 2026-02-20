@@ -10,7 +10,8 @@ import {
     X,
     PieChart,
     Briefcase,
-    CheckSquare
+    CheckSquare,
+    GitBranch
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -29,6 +30,7 @@ const DashboardLayout = ({ children }) => {
         { name: 'Deals', href: '/dashboard/deals', icon: Briefcase },
         { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
         { name: 'Team', href: '/admin/employees', icon: Users },
+        { name: 'Workflow', href: '/admin/workflow', icon: GitBranch },
         { name: 'Reports', href: '/admin/reports', icon: PieChart },
         { name: 'Activity', href: '/admin/activity', icon: CheckSquare },
         { name: 'Settings', href: '/admin/settings', icon: Settings },

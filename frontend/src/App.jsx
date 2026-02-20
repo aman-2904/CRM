@@ -14,6 +14,7 @@ import Deals from './pages/Deals';
 import Employees from './pages/Employees';
 import Reports from './pages/Reports';
 import ActivityLog from './pages/ActivityLog';
+import WorkflowManagement from './pages/WorkflowManagement';
 
 // Main App Component
 
@@ -112,6 +113,15 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <ActivityLog />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/workflow"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <WorkflowManagement />
               </ProtectedRoute>
             }
           />

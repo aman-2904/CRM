@@ -8,8 +8,8 @@ import api from '../services/api';
 const EmployeeDashboard = () => {
     const [stats, setStats] = useState([
         { title: "My Leads", value: "—", icon: Users, description: "Loading..." },
-        { title: "Pending Tasks", value: "—", icon: CheckSquare, description: "Loading..." },
-        { title: "Closed Deals", value: "8", icon: Briefcase, trend: "+2 this month", trendUp: true },
+        { title: "Today's Tasks", value: "—", icon: CheckSquare, description: "Loading..." },
+        { title: "Closed Deals", value: "—", icon: Briefcase, description: "Loading..." },
     ]);
     const [todaysTasks, setTodaysTasks] = useState([]);
     const [missedTasks, setMissedTasks] = useState([]);
@@ -18,20 +18,22 @@ const EmployeeDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [leadsRes, todayRes, missedRes] = await Promise.all([
+                const [leadsRes, todayRes, missedRes, dealsRes] = await Promise.all([
                     api.get('/leads'),
                     api.get('/followups?type=today'),
-                    api.get('/followups?type=missed')
+                    api.get('/followups?type=missed'),
+                    api.get('/deals/stats')
                 ]);
 
                 const leadsCount = leadsRes.data.data?.length || 0;
                 const todayCount = todayRes.data.data?.length || 0;
                 const missedCount = missedRes.data.data?.length || 0;
+                const dealStats = dealsRes.data.data || { won: 0 };
 
                 setStats([
                     { title: "My Leads", value: String(leadsCount), icon: Users, description: "Total assigned" },
                     { title: "Today's Tasks", value: String(todayCount), icon: CheckSquare, description: missedCount > 0 ? `${missedCount} overdue` : "All clear!", trendUp: missedCount === 0 },
-                    { title: "Closed Deals", value: "8", icon: Briefcase, trend: "+2 this month", trendUp: true },
+                    { title: "Closed Deals", value: String(dealStats.won || 0), icon: Briefcase, trend: "Personal Performance", trendUp: (dealStats.won || 0) > 0 },
                 ]);
 
                 setTodaysTasks(todayRes.data.data?.slice(0, 5) || []);

@@ -1,6 +1,5 @@
 import express from 'express';
 import leadsRouter from './leads.js';
-
 import usersRouter from './users.js';
 import followupsRouter from './followups.js';
 import dealsRouter from './deals.js';
@@ -8,6 +7,7 @@ import employeesRouter from './employees.js';
 import reportsRouter from './reports.js';
 import activitiesRouter from './activities.js';
 import sheetsRouter from './sheets.js';
+import workflowRouter from './workflowRoutes.js';
 
 const router = express.Router();
 
@@ -28,5 +28,6 @@ router.use('/employees', employeesRouter);
 router.use('/reports', reportsRouter);
 router.use('/activities', activitiesRouter);
 router.use('/sheets', sheetsRouter);
+router.use('/workflow', workflowRouter);
 
 export default router;

@@ -54,7 +54,12 @@ export const getDeals = async (req, res, next) => {
             .order('created_at', { ascending: false });
 
         if (stage) query = query.eq('stage', stage);
-        if (owner_id) query = query.eq('owner_id', owner_id);
+        if (owner_id) {
+            query = query.eq('owner_id', owner_id);
+        } else if (req.user.role !== 'admin') {
+            // Enforce owner filter for employees if no specific owner_id requested
+            query = query.eq('owner_id', req.user.id);
+        }
 
         const { data, error } = await query;
         if (error) throw error;
@@ -67,11 +72,15 @@ export const getDeals = async (req, res, next) => {
 
 export const getDealStats = async (req, res, next) => {
     try {
-        const { data: allDeals, error } = await supabase
+        let query = supabase
             .from('deals')
             .select('amount, stage');
 
-        if (error) throw error;
+        if (req.user.role !== 'admin') {
+            query = query.eq('owner_id', req.user.id);
+        }
+
+        const { data: allDeals, error } = await query;
 
         const stats = {
             total: allDeals.length,
