@@ -200,141 +200,142 @@ const Leads = () => {
 
     return (
         <DashboardLayout>
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Leads Management</h1>
-                <div className="flex gap-2 items-center">
-                    {syncMsg && (
-                        <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${syncMsg.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                            }`}>
-                            {syncMsg.text}
-                        </span>
-                    )}
-                    {selectedLeads.size === 1 && (() => {
-                        const selectedLead = leads.find(l => l.id === Array.from(selectedLeads)[0]);
-                        return selectedLead && selectedLead.status !== 'converted' ? (
+            {/* Sticky Action Bar */}
+            <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm -mx-6 px-6 pt-4 pb-4 mb-4">
+                {/* Row 1: Title + Buttons */}
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-3">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-3 sm:mb-0">Leads Management</h1>
+                    <div className="flex gap-2 items-center flex-wrap">
+                        {syncMsg && (
+                            <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${syncMsg.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                {syncMsg.text}
+                            </span>
+                        )}
+                        {selectedLeads.size === 1 && (() => {
+                            const selectedLead = leads.find(l => l.id === Array.from(selectedLeads)[0]);
+                            return selectedLead && selectedLead.status !== 'converted' ? (
+                                <button
+                                    onClick={() => { setLeadToConvert(selectedLead); setIsDealModalOpen(true); }}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-colors"
+                                >
+                                    <IndianRupee className="-ml-1 mr-2 h-5 w-5" />
+                                    Create Deal
+                                </button>
+                            ) : null;
+                        })()}
+                        {selectedLeads.size > 0 && role === 'admin' && (
                             <button
-                                onClick={() => { setLeadToConvert(selectedLead); setIsDealModalOpen(true); }}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-colors"
+                                onClick={handleBulkDelete}
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
                             >
-                                <IndianRupee className="-ml-1 mr-2 h-5 w-5" />
-                                Create Deal
+                                <Trash2 className="-ml-1 mr-2 h-5 w-5" />
+                                Delete Selected ({selectedLeads.size})
                             </button>
-                        ) : null;
-                    })()}
-                    {selectedLeads.size > 0 && role === 'admin' && (
+                        )}
+                        {role === 'admin' && (
+                            <button
+                                onClick={handleSyncSheet}
+                                disabled={syncing}
+                                className="inline-flex items-center px-4 py-2 border border-green-600 rounded-md shadow-sm text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <RefreshCw className={`-ml-1 mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+                                {syncing ? 'Syncing...' : 'Sync Sheet'}
+                            </button>
+                        )}
                         <button
-                            onClick={handleBulkDelete}
-                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+                            onClick={handleAddLead}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
                         >
-                            <Trash2 className="-ml-1 mr-2 h-5 w-5" />
-                            Delete Selected ({selectedLeads.size})
+                            <Plus className="-ml-1 mr-2 h-5 w-5" />
+                            Add New Lead
                         </button>
+                    </div>
+                </div>
+
+                {/* Row 2: Search & Date Filters */}
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        {/* Search */}
+                        <div className="relative flex-1 max-w-md">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                className="w-full pl-11 pr-4 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300"
+                                placeholder="Search by name, email, or company..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Preset Buttons */}
+                        <div className="flex items-center gap-1.5 p-1 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl overflow-hidden">
+                            {[['all', 'All'], ['today', 'Today'], ['yesterday', 'Yesterday'], ['7days', '7d'], ['30days', '30d'], ['custom', 'Custom']].map(([key, label]) => (
+                                <button
+                                    key={key}
+                                    onClick={() => applyPreset(key)}
+                                    className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 ${datePreset === key
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200 scale-[1.02]'
+                                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/80'
+                                        }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Result count */}
+                        {datePreset !== 'all' && (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/50 backdrop-blur-sm border border-blue-100 rounded-xl animate-in fade-in duration-500">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                <span className="text-xs font-bold text-blue-700">
+                                    {filteredLeads.length} {filteredLeads.length === 1 ? 'Lead' : 'Leads'}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Custom date pickers */}
+                    {datePreset === 'custom' && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-md px-3 py-1.5">
+                                <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                <input
+                                    type="date"
+                                    className="text-sm text-gray-700 border-none outline-none bg-transparent"
+                                    value={dateFrom}
+                                    onChange={(e) => setDateFrom(e.target.value)}
+                                />
+                            </div>
+                            <span className="text-gray-400 text-sm">to</span>
+                            <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-md px-3 py-1.5">
+                                <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                <input
+                                    type="date"
+                                    className="text-sm text-gray-700 border-none outline-none bg-transparent"
+                                    value={dateTo}
+                                    onChange={(e) => setDateTo(e.target.value)}
+                                />
+                            </div>
+                            {(dateFrom || dateTo) && (
+                                <button
+                                    onClick={() => { setDateFrom(''); setDateTo(''); }}
+                                    className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 rounded-md px-2 py-1.5 bg-red-50 hover:bg-red-100 transition-colors"
+                                >
+                                    <X className="h-3.5 w-3.5" /> Clear
+                                </button>
+                            )}
+                            {(dateFrom || dateTo) && (
+                                <span className="text-xs text-gray-500 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full">
+                                    {filteredLeads.length} result{filteredLeads.length !== 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </div>
                     )}
-                    {role === 'admin' && (
-                        <button
-                            onClick={handleSyncSheet}
-                            disabled={syncing}
-                            className="inline-flex items-center px-4 py-2 border border-green-600 rounded-md shadow-sm text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <RefreshCw className={`-ml-1 mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-                            {syncing ? 'Syncing...' : 'Sync Sheet'}
-                        </button>
-                    )}
-                    <button
-                        onClick={handleAddLead}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-                    >
-                        <Plus className="-ml-1 mr-2 h-5 w-5" />
-                        Add New Lead
-                    </button>
                 </div>
             </div>
 
-            {/* Search & Date Filters */}
-            <div className="mb-6 flex flex-col gap-3">
-                {/* Row 1: Search + Preset buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                    {/* Search */}
-                    <div className="relative flex-1 max-w-md">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            className="w-full pl-11 pr-4 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300"
-                            placeholder="Search by name, email, or company..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-
-                    {/* Preset Buttons */}
-                    <div className="flex items-center gap-1.5 p-1 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl overflow-hidden">
-                        {[['all', 'All'], ['today', 'Today'], ['yesterday', 'Yesterday'], ['7days', '7d'], ['30days', '30d'], ['custom', 'Custom']].map(([key, label]) => (
-                            <button
-                                key={key}
-                                onClick={() => applyPreset(key)}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 ${datePreset === key
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200 scale-[1.02]'
-                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/80'
-                                    }`}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Result count */}
-                    {datePreset !== 'all' && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/50 backdrop-blur-sm border border-blue-100 rounded-xl animate-in fade-in duration-500">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                            <span className="text-xs font-bold text-blue-700">
-                                {filteredLeads.length} {filteredLeads.length === 1 ? 'Lead' : 'Leads'}
-                            </span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Row 2: Custom date pickers (only when Custom is selected) */}
-                {datePreset === 'custom' && (
-                    <div className="flex items-center gap-2 flex-wrap pl-0">
-                        <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-md px-3 py-1.5">
-                            <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                            <input
-                                type="date"
-                                className="text-sm text-gray-700 border-none outline-none bg-transparent"
-                                value={dateFrom}
-                                onChange={(e) => setDateFrom(e.target.value)}
-                                placeholder="From"
-                            />
-                        </div>
-                        <span className="text-gray-400 text-sm">to</span>
-                        <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-md px-3 py-1.5">
-                            <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                            <input
-                                type="date"
-                                className="text-sm text-gray-700 border-none outline-none bg-transparent"
-                                value={dateTo}
-                                onChange={(e) => setDateTo(e.target.value)}
-                                placeholder="To"
-                            />
-                        </div>
-                        {(dateFrom || dateTo) && (
-                            <button
-                                onClick={() => { setDateFrom(''); setDateTo(''); }}
-                                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 rounded-md px-2 py-1.5 bg-red-50 hover:bg-red-100 transition-colors"
-                            >
-                                <X className="h-3.5 w-3.5" /> Clear
-                            </button>
-                        )}
-                        {(dateFrom || dateTo) && (
-                            <span className="text-xs text-gray-500 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full">
-                                {filteredLeads.length} result{filteredLeads.length !== 1 ? 's' : ''}
-                            </span>
-                        )}
-                    </div>
-                )}
-            </div>
 
             {/* Leads Table Container */}
             <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-slate-200/50 sm:rounded-3xl overflow-hidden transition-all duration-500">
