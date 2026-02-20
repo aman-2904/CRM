@@ -92,8 +92,16 @@ export const getDealStats = async (req, res, next) => {
 export const updateDeal = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const updates = req.body;
+        const { name, lead_id, amount, stage, expected_close_date } = req.body;
         const userId = req.user.id;
+
+        // Only update fields that exist in the deals table
+        const updates = {};
+        if (name !== undefined) updates.name = name;
+        if (lead_id !== undefined) updates.lead_id = lead_id;
+        if (amount !== undefined) updates.amount = amount;
+        if (stage !== undefined) updates.stage = stage;
+        if (expected_close_date !== undefined) updates.expected_close_date = expected_close_date;
 
         const { data, error } = await supabase
             .from('deals')
@@ -123,13 +131,33 @@ export const updateDeal = async (req, res, next) => {
 export const deleteDeal = async (req, res, next) => {
     try {
         const { id } = req.params;
+
+        // Get lead_id before deleting so we can revert the lead status
+        const { data: deal, error: fetchError } = await supabase
+            .from('deals')
+            .select('lead_id')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+
         const { error } = await supabase
             .from('deals')
             .delete()
             .eq('id', id);
 
         if (error) throw error;
-        res.json({ success: true, message: 'Deal deleted' });
+
+        // Revert lead status back to 'interested' if it was converted via this deal
+        if (deal?.lead_id) {
+            await supabase
+                .from('leads')
+                .update({ status: 'interested' })
+                .eq('id', deal.lead_id)
+                .eq('status', 'converted'); // only revert if still marked converted
+        }
+
+        res.json({ success: true, message: 'Deal deleted and lead status reverted' });
     } catch (error) {
         next(error);
     }

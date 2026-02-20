@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import DealModal from '../components/Deals/DealModal';
 import api from '../services/api';
-import { IndianRupee, TrendingUp, TrendingDown, Plus, Building, Calendar, User } from 'lucide-react';
+import { IndianRupee, TrendingUp, TrendingDown, Plus, Building, Calendar, Trash2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const Deals = () => {
@@ -45,6 +45,17 @@ const Deals = () => {
             fetchData();
         } catch (error) {
             alert('Failed to update deal');
+        }
+    };
+
+    const handleDeleteDeal = async (e, dealId) => {
+        e.stopPropagation();
+        if (!window.confirm('Are you sure you want to delete this deal? This cannot be undone.')) return;
+        try {
+            await api.delete(`/deals/${dealId}`);
+            fetchData();
+        } catch (error) {
+            alert('Failed to delete deal: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -164,22 +175,31 @@ const Deals = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        {/* Quick Stage Actions */}
-                                        <div className="mt-3 pt-3 border-t border-gray-50 flex gap-1">
-                                            {stages.filter(s => s.id !== deal.stage).slice(0, 2).map(s => (
-                                                <button
-                                                    key={s.id}
-                                                    onClick={(e) => { e.stopPropagation(); handleStageChange(deal.id, s.id); }}
-                                                    className={cn(
-                                                        "text-xs px-2 py-1 rounded-lg transition-all",
-                                                        s.id === 'closed_won' ? "bg-green-50 text-green-600 hover:bg-green-100" :
-                                                            s.id === 'closed_lost' ? "bg-red-50 text-red-600 hover:bg-red-100" :
-                                                                "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                                    )}
-                                                >
-                                                    → {s.label}
-                                                </button>
-                                            ))}
+                                        {/* Quick Stage Actions + Delete */}
+                                        <div className="mt-3 pt-3 border-t border-gray-50 flex items-center gap-1">
+                                            <div className="flex gap-1 flex-1">
+                                                {stages.filter(s => s.id !== deal.stage).slice(0, 2).map(s => (
+                                                    <button
+                                                        key={s.id}
+                                                        onClick={(e) => { e.stopPropagation(); handleStageChange(deal.id, s.id); }}
+                                                        className={cn(
+                                                            "text-xs px-2 py-1 rounded-lg transition-all",
+                                                            s.id === 'closed_won' ? "bg-green-50 text-green-600 hover:bg-green-100" :
+                                                                s.id === 'closed_lost' ? "bg-red-50 text-red-600 hover:bg-red-100" :
+                                                                    "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                                        )}
+                                                    >
+                                                        → {s.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={(e) => handleDeleteDeal(e, deal.id)}
+                                                className="ml-auto p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Delete deal"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}

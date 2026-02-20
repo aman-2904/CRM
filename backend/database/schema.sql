@@ -40,6 +40,7 @@ create table public.deals (
   id uuid primary key default uuid_generate_v4(),
   lead_id uuid references public.leads(id) on delete cascade,
   owner_id uuid references public.profiles(id),
+  name text,
   amount numeric default 0,
   stage text check (stage in ('prospecting', 'negotiation', 'closed_won', 'closed_lost')) default 'prospecting',
   expected_close_date date,
