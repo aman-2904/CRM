@@ -3,7 +3,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { X } from 'lucide-react';
 import api from '../../services/api';
 
-const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
+const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: employeesProp }) => {
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -20,6 +20,11 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        // Only fetch if not provided by parent
+        if (employeesProp) {
+            setEmployees(employeesProp);
+            return;
+        }
         const fetchEmployees = async () => {
             try {
                 const response = await api.get('/users/employees');
@@ -28,11 +33,10 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess }) => {
                 console.error('Failed to fetch employees', err);
             }
         };
-
         if (isOpen) {
             fetchEmployees();
         }
-    }, [isOpen]);
+    }, [isOpen, employeesProp]);
 
     useEffect(() => {
         if (leadToEdit) {

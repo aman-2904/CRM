@@ -20,7 +20,8 @@ const Leads = () => {
     const [syncMsg, setSyncMsg] = useState(null);
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
-    const [datePreset, setDatePreset] = useState('all'); // all | today | yesterday | 7days | 30days | custom
+    const [datePreset, setDatePreset] = useState('all');
+    const [employees, setEmployees] = useState([]);
 
     const applyPreset = (preset) => {
         setDatePreset(preset);
@@ -60,6 +61,10 @@ const Leads = () => {
     useEffect(() => {
         if (!authLoading) {
             fetchLeads();
+            // Pre-load employees so modal opens instantly
+            api.get('/users/employees')
+                .then(res => setEmployees(res.data.data || []))
+                .catch(() => { });
         }
     }, [authLoading]);
 
@@ -375,9 +380,13 @@ const Leads = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredLeads.map((lead) => (
-                                    <tr key={lead.id} className={`group hover:bg-blue-50/30 transition-all duration-300 ${selectedLeads.has(lead.id) ? 'bg-blue-50/50' : ''}`}>
+                                    <tr
+                                        key={lead.id}
+                                        onClick={() => handleEditLead(lead)}
+                                        className={`group hover:bg-blue-50/30 transition-all duration-300 cursor-pointer ${selectedLeads.has(lead.id) ? 'bg-blue-50/50' : ''}`}
+                                    >
                                         {role === 'admin' && (
-                                            <td className="px-6 py-5 whitespace-nowrap">
+                                            <td className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                                 <input
                                                     type="checkbox"
                                                     className="rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500 h-4.5 w-4.5 transition-all cursor-pointer"
@@ -422,7 +431,7 @@ const Leads = () => {
                                         <td className="px-6 py-5 text-sm font-semibold text-slate-800 leading-relaxed">
                                             {lead.source || '-'}
                                         </td>
-                                        <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                                        <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end space-x-1 transition-all duration-300">
                                                 <button onClick={() => handleEditLead(lead)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit Lead">
                                                     <Edit2 className="h-4.5 w-4.5" />
@@ -456,6 +465,7 @@ const Leads = () => {
                 onClose={() => setIsModalOpen(false)}
                 leadToEdit={selectedLead}
                 onSuccess={fetchLeads}
+                employees={employees}
             />
             <DealModal
                 isOpen={isDealModalOpen}
