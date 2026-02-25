@@ -138,4 +138,56 @@ export const getEmployeeStats = async (req, res, next) => {
     }
 };
 
+export const deleteEmployee = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ success: false, error: 'Admin password is required for verification.' });
+        }
+
+        // Prevent self-deletion
+        if (id === req.user.id) {
+            return res.status(400).json({ success: false, error: 'You cannot delete your own account.' });
+        }
+
+        // Verify admin password
+        const { error: authError } = await supabase.auth.signInWithPassword({
+            email: req.user.email,
+            password: password
+        });
+
+        if (authError) {
+            return res.status(401).json({ success: false, error: 'Invalid admin password. Verification failed.' });
+        }
+
+        // Unassign leads
+        const { error: leadUpdateError } = await supabase
+            .from('leads')
+            .update({ assigned_to: null })
+            .eq('assigned_to', id);
+
+        if (leadUpdateError) throw leadUpdateError;
+
+        // Unassign deals
+        const { error: dealUpdateError } = await supabase
+            .from('deals')
+            .update({ owner_id: null })
+            .eq('owner_id', id);
+
+        if (dealUpdateError) throw dealUpdateError;
+
+        // If no dependencies (or now cleared), delete from auth.users (cascades to public.profiles)
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(id);
+
+        if (deleteError) throw deleteError;
+
+        res.json({ success: true, message: 'Employee deleted successfully' });
+    } catch (error) {
+        console.error('Delete Employee Error:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
 export { requireAdmin };

@@ -1,14 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import api from '../services/api';
-import { Users, TrendingUp, IndianRupee, Award, ToggleLeft, ToggleRight, Shield, User } from 'lucide-react';
+import { Users, TrendingUp, IndianRupee, Award, ToggleLeft, ToggleRight, Shield, User, Trash2, X, Lock, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { Dialog, Transition } from '@headlessui/react';
 
 const Employees = () => {
     const [employees, setEmployees] = useState([]);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(null);
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [password, setPassword] = useState('');
+    const [employeeToDelete, setEmployeeToDelete] = useState(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [error, setError] = useState('');
 
     const fetchData = async () => {
         try {
@@ -53,6 +61,37 @@ const Employees = () => {
             alert('Failed to update role');
         } finally {
             setUpdating(null);
+        }
+    };
+
+    const handleDeleteEmployee = (employee) => {
+        setEmployeeToDelete(employee);
+        setPassword('');
+        setError('');
+        setIsModalOpen(true);
+    };
+
+    const handleConfirmDelete = async (e) => {
+        if (e) e.preventDefault();
+        if (!password) {
+            setError('Account password is required');
+            return;
+        }
+
+        setIsVerifying(true);
+        setError('');
+
+        try {
+            await api.delete(`/employees/${employeeToDelete.id}`, {
+                data: { password }
+            });
+            setIsModalOpen(false);
+            fetchData();
+        } catch (error) {
+            const errorMsg = error.response?.data?.error || 'Verification failed. Please check your password.';
+            setError(errorMsg);
+        } finally {
+            setIsVerifying(false);
         }
     };
 
@@ -148,6 +187,7 @@ const Employees = () => {
                                 <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Revenue</th>
                                 <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Conv. Rate</th>
                                 <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -208,12 +248,124 @@ const Employees = () => {
                                             )}
                                         </button>
                                     </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <button
+                                            onClick={() => handleDeleteEmployee(emp)}
+                                            disabled={updating === emp.id}
+                                            className="p-1 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                                            title="Delete Employee"
+                                        >
+                                            <Trash2 className="h-5 w-5" />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 )}
             </div>
+            {/* Verification Modal */}
+            <Transition appear show={isModalOpen} as={Fragment}>
+                <Dialog as="div" className="relative z-[100]" onClose={() => !isVerifying && setIsModalOpen(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-[2.5rem] bg-white p-8 text-left align-middle shadow-2xl transition-all border border-slate-100">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-600 shadow-inner">
+                                            <Shield className="w-6 h-6" />
+                                        </div>
+                                        <button
+                                            onClick={() => setIsModalOpen(false)}
+                                            disabled={isVerifying}
+                                            className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    <Dialog.Title as="h3" className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                                        Security Verification
+                                    </Dialog.Title>
+                                    <p className="mt-2 text-sm font-medium text-slate-500">
+                                        Deleting <span className="text-slate-900 font-bold">{employeeToDelete?.full_name || 'this employee'}</span> is permanent.
+                                        Please enter your admin password to confirm.
+                                    </p>
+
+                                    {error && (
+                                        <div className="mt-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-700 animate-in fade-in slide-in-from-top-1">
+                                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                            <p className="text-xs font-bold leading-tight">{error}</p>
+                                        </div>
+                                    )}
+
+                                    <form onSubmit={handleConfirmDelete} className="mt-6 space-y-4">
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <Lock className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="Enter admin password"
+                                                autoFocus
+                                                disabled={isVerifying}
+                                                className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold placeholder:text-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                            />
+                                        </div>
+
+                                        <div className="flex gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsModalOpen(false)}
+                                                disabled={isVerifying}
+                                                className="flex-1 px-4 py-3.5 bg-white border border-slate-200 text-sm font-black text-slate-600 rounded-2xl hover:bg-slate-50 transition-all duration-300"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={isVerifying || !password}
+                                                className="flex-1 px-4 py-3.5 bg-rose-600 text-white text-sm font-black rounded-2xl hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-rose-200 border-b-4 border-rose-800 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                {isVerifying ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        Verifying...
+                                                    </>
+                                                ) : (
+                                                    'Confirm Delete'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
         </DashboardLayout>
     );
 };

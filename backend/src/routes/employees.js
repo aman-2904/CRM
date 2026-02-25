@@ -2,6 +2,7 @@ import express from 'express';
 import {
     getEmployees,
     updateEmployee,
+    deleteEmployee,
     getRoles,
     getEmployeeStats,
     requireAdmin
@@ -17,5 +18,6 @@ router.get('/', getEmployees);
 router.get('/roles', getRoles);
 router.get('/:id/stats', getEmployeeStats);
 router.put('/:id', updateEmployee);
+router.delete('/:id', deleteEmployee);
 
 export default router;
