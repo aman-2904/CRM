@@ -180,14 +180,24 @@ export const deleteLeadsBulk = async (req, res, next) => {
             throw error;
         }
 
-        const { error } = await supabase
-            .from('leads')
-            .delete()
-            .in('id', ids);
+        const CHUNK_SIZE = 100;
+        let deletedCount = 0;
 
-        if (error) throw error;
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const { error } = await supabase
+                .from('leads')
+                .delete()
+                .in('id', chunk);
 
-        res.json({ success: true, message: `${ids.length} leads deleted` });
+            if (error) {
+                console.error('Error during chunked deletion:', error);
+                throw error;
+            }
+            deletedCount += chunk.length;
+        }
+
+        res.json({ success: true, message: `${deletedCount} leads deleted` });
     } catch (error) {
         next(error);
     }
