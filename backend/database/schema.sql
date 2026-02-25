@@ -15,6 +15,7 @@ create table public.profiles (
   full_name text,
   email text,
   avatar_url text,
+  is_active boolean default true,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

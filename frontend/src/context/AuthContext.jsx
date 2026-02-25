@@ -50,6 +50,14 @@ export const AuthProvider = ({ children }) => {
 
             if (error) throw error;
 
+            if (data && data.is_active === false) {
+                await supabase.auth.signOut();
+                setUser(null);
+                setSession(null);
+                setRole(null);
+                throw new Error("Your account has been deactivated.");
+            }
+
             // Flatten the role name
             const roleName = data.roles?.name || 'employee';
             setRole(roleName);

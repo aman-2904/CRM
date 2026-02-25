@@ -28,6 +28,10 @@ const authMiddleware = async (req, res, next) => {
             .eq('id', user.id)
             .single();
 
+        if (profile && profile.is_active === false) {
+            return res.status(403).json({ error: 'Your account has been deactivated. Please contact an administrator.' });
+        }
+
         req.user = {
             ...user,
             profile: profile,
