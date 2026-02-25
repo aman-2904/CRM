@@ -251,7 +251,7 @@ const Leads = () => {
                                 Delete Selected ({selectedLeads.size})
                             </button>
                         )}
-                        {role === 'admin' && (
+                        {true && (
                             <button
                                 onClick={handleSyncSheet}
                                 disabled={syncing}

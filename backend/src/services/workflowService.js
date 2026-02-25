@@ -9,10 +9,11 @@ export async function getWorkflowSettings() {
         const { data, error } = await supabase
             .from('workflow_settings')
             .select('*')
-            .limit(1)
-            .single();
-        if (error) return null;
-        return data;
+            .order('updated_at', { ascending: false })
+            .limit(1);
+
+        if (error || !data || data.length === 0) return null;
+        return data[0];
     } catch {
         return null;
     }
@@ -22,11 +23,13 @@ export async function getWorkflowSettings() {
  * Upsert (save) workflow settings.
  */
 export async function saveWorkflowSettings(settings) {
-    const { data: existing } = await supabase
+    const { data: existingRows } = await supabase
         .from('workflow_settings')
         .select('id')
-        .limit(1)
-        .single();
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+    const existing = existingRows?.[0];
 
     if (existing?.id) {
         const { data, error } = await supabase

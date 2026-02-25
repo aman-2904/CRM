@@ -4,9 +4,6 @@ import authMiddleware from '../middleware/authMiddleware.js';
 // POST /api/sheets/sync-now  (admin only)
 export const syncNow = async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, error: 'Admins only' });
-        }
         // Run in background — don't await so the response is instant
         runSync();
         res.json({ success: true, message: 'Sync started' });

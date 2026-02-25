@@ -309,7 +309,25 @@ const WorkflowManagement = () => {
                             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${autoAssign ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
                                 {autoAssign ? 'Active' : 'Inactive'}
                             </span>
-                            <Toggle enabled={autoAssign} onToggle={() => setAutoAssign(v => !v)} />
+                            <Toggle
+                                enabled={autoAssign}
+                                onToggle={async () => {
+                                    const newVal = !autoAssign;
+                                    setAutoAssign(newVal);
+                                    try {
+                                        await api.post('/workflow', {
+                                            auto_assign_enabled: newVal,
+                                            distribution_type: distributionType,
+                                            rules,
+                                            sheet_mappings: sheetMappings
+                                        });
+                                    } catch (err) {
+                                        console.error('Failed to auto-save toggle', err);
+                                        setAutoAssign(!newVal); // revert
+                                        setError('Failed to save auto-assignment status');
+                                    }
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
