@@ -15,7 +15,7 @@ export const createDeal = async (req, res, next) => {
                 expected_close_date,
                 name: name || 'New Deal'
             })
-            .select('*, leads(first_name, last_name, company)')
+            .select('*, leads(id, first_name, last_name, company)')
             .single();
 
         if (error) throw error;
@@ -50,7 +50,7 @@ export const getDeals = async (req, res, next) => {
 
         let query = supabase
             .from('deals')
-            .select('*, leads(first_name, last_name, company, email), profiles!deals_owner_id_fkey(full_name)')
+            .select('*, leads(id, first_name, last_name, company, email), profiles!deals_owner_id_fkey(full_name)')
             .order('created_at', { ascending: false });
 
         if (stage) query = query.eq('stage', stage);

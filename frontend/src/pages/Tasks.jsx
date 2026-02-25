@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import TaskModal from '../components/Tasks/TaskModal';
+import LeadFormModal from '../components/Leads/LeadFormModal';
 import api from '../services/api';
 import { Calendar as CalendarIcon, Clock, CheckCircle, AlertCircle, Plus, ChevronRight, User } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -11,6 +12,10 @@ const Tasks = () => {
     const [activeTab, setActiveTab] = useState('today'); // today, upcoming, missed, completed
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+    const [selectedLead, setSelectedLead] = useState(null);
+    const [modalInitialTab, setModalInitialTab] = useState('profile');
+    const [employees, setEmployees] = useState([]);
 
     const fetchTasks = async () => {
         try {
@@ -31,6 +36,8 @@ const Tasks = () => {
 
     useEffect(() => {
         fetchTasks();
+        // Pre-load employees for the LeadFormModal
+        api.get('/users/employees').then(res => setEmployees(res.data.data || [])).catch(() => { });
     }, [activeTab]);
 
     const handleMarkComplete = async (taskId) => {
@@ -113,7 +120,11 @@ const Tasks = () => {
                             <div
                                 key={task.id}
                                 className="group bg-white rounded-2xl p-5 border border-gray-100 hover:border-blue-100 hover:shadow-xl hover:shadow-gray-100 transition-all cursor-pointer"
-                                onClick={() => { setSelectedTask(task); setIsModalOpen(true); }}
+                                onClick={() => {
+                                    setSelectedLead(task.leads);
+                                    setModalInitialTab('calendar');
+                                    setIsLeadModalOpen(true);
+                                }}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
@@ -173,6 +184,15 @@ const Tasks = () => {
                 onClose={() => setIsModalOpen(false)}
                 taskToEdit={selectedTask}
                 onSuccess={fetchTasks}
+            />
+
+            <LeadFormModal
+                isOpen={isLeadModalOpen}
+                onClose={() => setIsLeadModalOpen(false)}
+                leadToEdit={selectedLead}
+                initialTab={modalInitialTab}
+                onSuccess={fetchTasks}
+                employees={employees}
             />
         </DashboardLayout>
     );

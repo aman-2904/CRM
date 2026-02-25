@@ -12,6 +12,7 @@ const Leads = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedLead, setSelectedLead] = useState(null);
+    const [modalInitialTab, setModalInitialTab] = useState('profile');
     const [searchTerm, setSearchTerm] = useState('');
     const [leadToConvert, setLeadToConvert] = useState(null);
     const [selectedLeads, setSelectedLeads] = useState(new Set());
@@ -94,8 +95,9 @@ const Leads = () => {
         }
     };
 
-    const handleEditLead = (lead) => {
+    const handleEditLead = (lead, tab = 'profile') => {
         setSelectedLead(lead);
+        setModalInitialTab(tab);
         setIsModalOpen(true);
     };
 
@@ -448,6 +450,13 @@ const Leads = () => {
                                                 <button onClick={() => handleEditLead(lead)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit Lead">
                                                     <Edit2 className="h-4.5 w-4.5" />
                                                 </button>
+                                                <button
+                                                    onClick={() => handleEditLead(lead, 'calendar')}
+                                                    className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                                                    title="View Follow-up Calendar"
+                                                >
+                                                    <Calendar className="h-4.5 w-4.5" />
+                                                </button>
                                                 {lead.status !== 'converted' && (
                                                     <button
                                                         onClick={() => { setLeadToConvert(lead); setIsDealModalOpen(true); }}
@@ -476,6 +485,7 @@ const Leads = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 leadToEdit={selectedLead}
+                initialTab={modalInitialTab}
                 onSuccess={fetchLeads}
                 employees={employees}
             />

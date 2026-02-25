@@ -4,6 +4,7 @@ import StatsCard from '../components/Dashboard/StatsCard';
 import api from '../services/api';
 import { Users, IndianRupee, TrendingUp, Activity, AlertTriangle } from 'lucide-react';
 import SheetSyncPanel from '../components/Dashboard/SheetSyncPanel';
+import LeadFormModal from '../components/Leads/LeadFormModal';
 import {
     AreaChart,
     Area,
@@ -28,6 +29,10 @@ const AdminDashboard = () => {
     const [recentDeals, setRecentDeals] = useState([]);
     const [missedTasks, setMissedTasks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+    const [selectedLead, setSelectedLead] = useState(null);
+    const [modalInitialTab, setModalInitialTab] = useState('profile');
+    const [employees, setEmployees] = useState([]);
 
     const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -76,8 +81,15 @@ const AdminDashboard = () => {
                 setLoading(false);
             }
         };
+        const fetchEmployees = async () => {
+            try {
+                const response = await api.get('/users/employees');
+                setEmployees(response.data.data || []);
+            } catch (err) { }
+        };
 
         fetchDashboardData();
+        fetchEmployees();
     }, []);
 
     const formatCurrency = (num) => {
@@ -112,9 +124,17 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <h4 className="font-black text-rose-900 text-sm uppercase tracking-tight">{missedTasks.length} Overdue Follow-ups!</h4>
-                        <p className="text-xs font-semibold text-rose-600 mt-1 leading-relaxed">
-                            {missedTasks.map(t => t.leads?.first_name || 'Lead').slice(0, 3).join(', ')} {missedTasks.length > 3 ? 'and others' : ''} require immediate attention.
-                        </p>
+                        <div className="flex gap-2 mt-2">
+                            {missedTasks.map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => { setSelectedLead(t.leads); setModalInitialTab('calendar'); setIsLeadModalOpen(true); }}
+                                    className="px-2 py-1 bg-white/50 hover:bg-white text-rose-700 text-[10px] font-black uppercase tracking-widest rounded-lg border border-rose-100 transition-all active:scale-95"
+                                >
+                                    {t.leads?.first_name}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
@@ -178,7 +198,11 @@ const AdminDashboard = () => {
                         {recentDeals.length > 0 ? (
                             <ul className="divide-y divide-slate-100">
                                 {recentDeals.map((deal) => (
-                                    <li key={deal.id} className="px-7 py-5 hover:bg-white/50 transition-colors group">
+                                    <li
+                                        key={deal.id}
+                                        className="px-7 py-5 hover:bg-white/50 transition-colors group cursor-pointer"
+                                        onClick={() => { setSelectedLead(deal.leads); setModalInitialTab('calendar'); setIsLeadModalOpen(true); }}
+                                    >
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-sm group-hover:bg-blue-50 group-hover:text-blue-500 transition-all">
@@ -213,6 +237,15 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <SheetSyncPanel />
             </div>
+
+            <LeadFormModal
+                isOpen={isLeadModalOpen}
+                onClose={() => setIsLeadModalOpen(false)}
+                leadToEdit={selectedLead}
+                initialTab={modalInitialTab}
+                onSuccess={() => { }}
+                employees={employees}
+            />
         </DashboardLayout>
     );
 };

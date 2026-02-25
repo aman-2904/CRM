@@ -15,7 +15,7 @@ export const createFollowup = async (req, res, next) => {
                 notes,
                 status: status || 'pending'
             })
-            .select('*, leads(first_name, last_name)')
+            .select('*, leads(id, first_name, last_name)')
             .single();
 
         if (error) throw error;
@@ -37,12 +37,12 @@ export const createFollowup = async (req, res, next) => {
 
 export const getFollowups = async (req, res, next) => {
     try {
-        const { status, type, assigned_to } = req.query;
+        const { status, type, assigned_to, lead_id } = req.query;
         const now = new Date().toISOString();
 
         let query = supabase
             .from('followups')
-            .select('*, leads(first_name, last_name, email), profiles!followups_assigned_to_fkey(full_name)')
+            .select('*, leads(id, first_name, last_name, email), profiles!followups_assigned_to_fkey(full_name)')
             .order('scheduled_at', { ascending: true });
 
         // Filters
@@ -55,6 +55,10 @@ export const getFollowups = async (req, res, next) => {
 
         if (status) {
             query = query.eq('status', status);
+        }
+
+        if (lead_id) {
+            query = query.eq('lead_id', lead_id);
         }
 
         // Dashboard specific filters (type = today, missed, upcoming)

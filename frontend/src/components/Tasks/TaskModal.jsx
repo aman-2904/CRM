@@ -1,9 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
-import { X, Calendar as CalendarIcon, Clock, User } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Clock, User, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 
-const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess, initialLeadId }) => {
+const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess, initialLeadId, initialDate }) => {
     const [formData, setFormData] = useState({
         lead_id: '',
         scheduled_at: '',
@@ -49,7 +49,7 @@ const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess, initialLeadId }) =>
         } else {
             setFormData({
                 lead_id: initialLeadId || '',
-                scheduled_at: '',
+                scheduled_at: initialDate ? new Date(initialDate).toISOString().slice(0, 16) : '',
                 notes: '',
                 assigned_to: '',
                 status: 'pending'
@@ -78,6 +78,21 @@ const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess, initialLeadId }) =>
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to save task');
         } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this follow-up?')) return;
+
+        setLoading(true);
+        setError('');
+        try {
+            await api.delete(`/followups/${taskToEdit.id}`);
+            onSuccess();
+            onClose();
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to delete task');
             setLoading(false);
         }
     };
@@ -161,17 +176,32 @@ const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess, initialLeadId }) =>
                                     />
                                 </div>
 
-                                <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
-                                    <button type="button" onClick={onClose} className="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all">
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="px-8 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50 transition-all active:scale-95"
-                                    >
-                                        {loading ? 'Scheduling...' : (taskToEdit ? 'Update Task' : 'Schedule Task')}
-                                    </button>
+                                <div className="mt-8 flex justify-between items-center pt-4 border-t border-gray-100">
+                                    {taskToEdit ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleDelete}
+                                            disabled={loading}
+                                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            Delete
+                                        </button>
+                                    ) : (
+                                        <div />
+                                    )}
+                                    <div className="flex gap-3">
+                                        <button type="button" onClick={onClose} className="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all">
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="px-8 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50 transition-all active:scale-95"
+                                        >
+                                            {loading ? 'Processing...' : (taskToEdit ? 'Update' : 'Schedule')}
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
