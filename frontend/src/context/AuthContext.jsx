@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState(null);
+    const [profile, setProfile] = useState(null);
 
     useEffect(() => {
         // Check active session
@@ -55,12 +56,14 @@ export const AuthProvider = ({ children }) => {
                 setUser(null);
                 setSession(null);
                 setRole(null);
+                setProfile(null);
                 throw new Error("Your account has been deactivated.");
             }
 
             // Flatten the role name
             const roleName = data.roles?.name || 'employee';
             setRole(roleName);
+            setProfile(data);
 
         } catch (error) {
             console.error('Error fetching role:', error);
@@ -96,12 +99,15 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setSession(null);
         setRole(null);
+        setProfile(null);
     };
 
     const value = {
         session,
         user,
         role,
+        profile,
+        setProfile,
         login,
         signup,
         logout,

@@ -16,7 +16,7 @@ import {
 import { cn } from '../../utils/cn';
 
 const DashboardLayout = ({ children }) => {
-    const { user, role, logout } = useAuth();
+    const { user, role, logout, profile } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
 
@@ -33,12 +33,13 @@ const DashboardLayout = ({ children }) => {
         { name: 'Workflow', href: '/admin/workflow', icon: GitBranch },
         { name: 'Reports', href: '/admin/reports', icon: PieChart },
         { name: 'Activity', href: '/admin/activity', icon: CheckSquare },
-        { name: 'Settings', href: '/admin/settings', icon: Settings },
+        { name: 'Profile', href: '/profile', icon: Settings },
     ] : [
         { name: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'My Leads', href: '/dashboard/leads', icon: Users },
         { name: 'Deals', href: '/dashboard/deals', icon: Briefcase },
         { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
+        { name: 'Profile', href: '/profile', icon: Settings },
     ];
 
     return (
@@ -88,14 +89,22 @@ const DashboardLayout = ({ children }) => {
                     <div className="px-4 py-6">
                         <div className="group flex items-center p-3.5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300 shadow-sm">
                             <div className="flex-shrink-0 relative">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-sm font-bold text-white shadow-inner ring-2 ring-slate-900">
-                                    {user?.email?.[0].toUpperCase()}
+                                {profile?.avatar_url ? (
+                                    <img
+                                        src={profile.avatar_url}
+                                        alt="Avatar"
+                                        className="h-10 w-10 rounded-full object-cover shadow-inner ring-2 ring-slate-900"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                    />
+                                ) : null}
+                                <div className={`h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 items-center justify-center text-sm font-bold text-white shadow-inner ring-2 ring-slate-900 ${profile?.avatar_url ? 'hidden' : 'flex'}`}>
+                                    {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
                                 </div>
                                 <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-slate-900"></div>
                             </div>
                             <div className="ml-3 overflow-hidden">
                                 <p className="text-sm font-semibold text-white truncate group-hover:text-blue-200 transition-colors">
-                                    {user?.user_metadata?.full_name || 'User'}
+                                    {profile?.full_name || user?.user_metadata?.full_name || 'User'}
                                 </p>
                                 <p className="text-xs font-medium text-slate-500 capitalize">{role}</p>
                             </div>

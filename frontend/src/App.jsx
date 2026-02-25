@@ -15,6 +15,7 @@ import Employees from './pages/Employees';
 import Reports from './pages/Reports';
 import ActivityLog from './pages/ActivityLog';
 import WorkflowManagement from './pages/WorkflowManagement';
+import Profile from './pages/Profile';
 
 // Main App Component
 
@@ -35,6 +36,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <EmployeeDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />
@@ -134,6 +144,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
