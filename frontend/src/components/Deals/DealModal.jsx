@@ -65,11 +65,16 @@ const DealModal = ({ isOpen, onClose, dealToEdit, leadToConvert, onSuccess }) =>
         setLoading(true);
         setError('');
 
+        const payload = {
+            ...formData,
+            expected_close_date: formData.expected_close_date || null
+        };
+
         try {
             if (dealToEdit) {
-                await api.put(`/deals/${dealToEdit.id}`, formData);
+                await api.put(`/deals/${dealToEdit.id}`, payload);
             } else {
-                await api.post('/deals', formData);
+                await api.post('/deals', payload);
             }
             onSuccess();
             onClose();

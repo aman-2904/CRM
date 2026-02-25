@@ -12,7 +12,7 @@ export const createDeal = async (req, res, next) => {
                 owner_id: userId,
                 amount: amount || 0,
                 stage: stage || 'prospecting',
-                expected_close_date,
+                expected_close_date: expected_close_date || null,
                 name: name || 'New Deal'
             })
             .select('*, leads(id, first_name, last_name, company)')
@@ -110,7 +110,7 @@ export const updateDeal = async (req, res, next) => {
         if (lead_id !== undefined) updates.lead_id = lead_id;
         if (amount !== undefined) updates.amount = amount;
         if (stage !== undefined) updates.stage = stage;
-        if (expected_close_date !== undefined) updates.expected_close_date = expected_close_date;
+        if (expected_close_date !== undefined) updates.expected_close_date = expected_close_date || null;
 
         const { data, error } = await supabase
             .from('deals')
