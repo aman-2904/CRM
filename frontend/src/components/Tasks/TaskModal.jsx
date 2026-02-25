@@ -3,7 +3,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { X, Calendar as CalendarIcon, Clock, User } from 'lucide-react';
 import api from '../../services/api';
 
-const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess }) => {
+const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess, initialLeadId }) => {
     const [formData, setFormData] = useState({
         lead_id: '',
         scheduled_at: '',
@@ -48,14 +48,14 @@ const TaskModal = ({ isOpen, onClose, taskToEdit, onSuccess }) => {
             });
         } else {
             setFormData({
-                lead_id: '',
+                lead_id: initialLeadId || '',
                 scheduled_at: '',
                 notes: '',
                 assigned_to: '',
                 status: 'pending'
             });
         }
-    }, [taskToEdit, isOpen]);
+    }, [taskToEdit, isOpen, initialLeadId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

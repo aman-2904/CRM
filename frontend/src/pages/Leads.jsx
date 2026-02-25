@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import LeadFormModal from '../components/Leads/LeadFormModal';
 import DealModal from '../components/Deals/DealModal';
+import TaskModal from '../components/Tasks/TaskModal';
 import api from '../services/api';
 import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calendar, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +22,8 @@ const Leads = () => {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [datePreset, setDatePreset] = useState('all');
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [leadToFollowup, setLeadToFollowup] = useState(null);
     const [employees, setEmployees] = useState([]);
 
     const applyPreset = (preset) => {
@@ -219,13 +222,22 @@ const Leads = () => {
                         {selectedLeads.size === 1 && (() => {
                             const selectedLead = leads.find(l => l.id === Array.from(selectedLeads)[0]);
                             return selectedLead && selectedLead.status !== 'converted' ? (
-                                <button
-                                    onClick={() => { setLeadToConvert(selectedLead); setIsDealModalOpen(true); }}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-colors"
-                                >
-                                    <IndianRupee className="-ml-1 mr-2 h-5 w-5" />
-                                    Create Deal
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => { setLeadToConvert(selectedLead); setIsDealModalOpen(true); }}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-colors"
+                                    >
+                                        <IndianRupee className="-ml-1 mr-2 h-5 w-5" />
+                                        Create Deal
+                                    </button>
+                                    <button
+                                        onClick={() => { setLeadToFollowup(selectedLead); setIsTaskModalOpen(true); }}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-colors"
+                                    >
+                                        <Calendar className="-ml-1 mr-2 h-5 w-5" />
+                                        Create Follow Up
+                                    </button>
+                                </div>
                             ) : null;
                         })()}
                         {selectedLeads.size > 0 && role === 'admin' && (
@@ -268,7 +280,7 @@ const Leads = () => {
                             <input
                                 type="text"
                                 className="w-full pl-11 pr-4 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300"
-                                placeholder="Search by name, email, or company..."
+                                placeholder="Search by name or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -373,7 +385,7 @@ const Leads = () => {
                                     )}
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Name</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Company</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Lead Date</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Source</th>
                                     <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase">Actions</th>
                                 </tr>
@@ -426,7 +438,7 @@ const Leads = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-slate-500">
-                                            {lead.company || <span className="text-slate-300 italic">-</span>}
+                                            {lead.created_at ? new Date(lead.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
                                         </td>
                                         <td className="px-6 py-5 text-sm font-semibold text-slate-800 leading-relaxed">
                                             {lead.source || '-'}
@@ -472,6 +484,15 @@ const Leads = () => {
                 onClose={() => { setIsDealModalOpen(false); setLeadToConvert(null); }}
                 leadToConvert={leadToConvert}
                 onSuccess={() => { fetchLeads(); setIsDealModalOpen(false); }}
+            />
+            <TaskModal
+                isOpen={isTaskModalOpen}
+                onClose={() => { setIsTaskModalOpen(false); setLeadToFollowup(null); }}
+                initialLeadId={leadToFollowup?.id}
+                onSuccess={() => {
+                    setSyncMsg({ type: 'success', text: 'Follow-up scheduled!' });
+                    setTimeout(() => setSyncMsg(null), 3000);
+                }}
             />
         </DashboardLayout>
     );
