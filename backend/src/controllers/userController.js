@@ -59,9 +59,10 @@ export const updatePassword = async (req, res, next) => {
             return res.status(400).json({ success: false, error: 'New password is required' });
         }
 
-        const { error } = await supabase.auth.updateUser({
-            password: newPassword
-        });
+        const { error } = await supabase.auth.admin.updateUserById(
+            req.user.id,
+            { password: newPassword }
+        );
 
         if (error) throw error;
 

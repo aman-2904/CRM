@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
-import { Plus, Trash2, Save, ArrowRight, Zap, Users, BarChart3, RefreshCw, GitBranch, Clock, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowRight, Zap, Users, BarChart3, RefreshCw, GitBranch, Clock, RotateCcw, ChevronDown } from 'lucide-react';
 import api from '../services/api';
+import CustomDropdown from '../components/Common/CustomDropdown';
 
 // ─── Toggle Component ────────────────────────────────────────────────────────
 const Toggle = ({ enabled, onToggle }) => (
@@ -32,7 +33,6 @@ const GRADIENTS = [
     'bg-gradient-to-br from-cyan-400 to-sky-500',
 ];
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 const WorkflowManagement = () => {
     const [autoAssign, setAutoAssign] = useState(true);
     const [distributionType, setDistributionType] = useState('percentage');
@@ -428,18 +428,12 @@ const WorkflowManagement = () => {
 
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Revoke From:</span>
-                                    <select
-                                        value={revokeEmployeeId}
-                                        onChange={(e) => setRevokeEmployeeId(e.target.value)}
-                                        className="text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500/20"
-                                    >
-                                        <option value="all">All Employees</option>
-                                        {availableEmployees
-                                            .filter(emp => emp.roles?.name !== 'admin')
-                                            .map(emp => (
-                                                <option key={emp.id} value={emp.id}>{emp.full_name || emp.email}</option>
-                                            ))}
-                                    </select>
+                                    <CustomDropdown
+                                        items={availableEmployees.filter(emp => emp.roles?.name !== 'admin')}
+                                        selectedId={revokeEmployeeId}
+                                        onSelect={setRevokeEmployeeId}
+                                        className="w-40"
+                                    />
                                 </div>
                             </div>
 
@@ -626,15 +620,14 @@ const WorkflowManagement = () => {
                                                     onChange={(e) => handleMappingChange(idx, 'sheet_pattern', e.target.value)}
                                                     className="w-full text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500/20 outline-none"
                                                 />
-                                                <select
-                                                    value={m.employee_id}
-                                                    onChange={(e) => handleMappingChange(idx, 'employee_id', e.target.value)}
-                                                    className="w-full text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 outline-none"
-                                                >
-                                                    {availableEmployees.map(e => (
-                                                        <option key={e.id} value={e.id}>{e.full_name || e.email}</option>
-                                                    ))}
-                                                </select>
+                                                <CustomDropdown
+                                                    items={availableEmployees.filter(emp => emp.roles?.name !== 'admin')}
+                                                    selectedId={m.employee_id}
+                                                    onSelect={(val) => handleMappingChange(idx, 'employee_id', val)}
+                                                    showAllOption={false}
+                                                    placeholder="Select..."
+                                                    className="w-full"
+                                                />
                                                 <button onClick={() => handleRemoveMapping(idx)} className="p-2 text-slate-300 hover:text-rose-500">
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>

@@ -4,8 +4,9 @@ import LeadFormModal from '../components/Leads/LeadFormModal';
 import DealModal from '../components/Deals/DealModal';
 import TaskModal from '../components/Tasks/TaskModal';
 import api from '../services/api';
-import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calendar, X, Users } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calendar, X, Users, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import CustomDropdown from '../components/Common/CustomDropdown';
 
 const Leads = () => {
     const [leads, setLeads] = useState([]);
@@ -294,22 +295,13 @@ const Leads = () => {
 
                         {/* Employee Assignment Filter (Admin Only) */}
                         {role === 'admin' && (
-                            <div className="relative">
-                                <select
-                                    value={selectedEmployeeId}
-                                    onChange={(e) => setSelectedEmployeeId(e.target.value)}
-                                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 cursor-pointer"
-                                >
-                                    <option value="all">All Employees</option>
-                                    {employees
-                                        .filter(emp => emp.roles?.name !== 'admin')
-                                        .map(emp => (
-                                            <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                                        ))}
-                                </select>
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <Users className="h-4 w-4 text-slate-400" />
-                                </div>
+                            <div className="relative group">
+                                <CustomDropdown
+                                    items={employees.filter(emp => emp.roles?.name !== 'admin')}
+                                    selectedId={selectedEmployeeId}
+                                    onSelect={setSelectedEmployeeId}
+                                    className="w-full sm:w-48"
+                                />
                             </div>
                         )}
 
