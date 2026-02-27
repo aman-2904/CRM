@@ -292,22 +292,24 @@ const Leads = () => {
                             />
                         </div>
 
-                        {/* Employee Assignment Filter */}
-                        <div className="relative">
-                            <select
-                                value={selectedEmployeeId}
-                                onChange={(e) => setSelectedEmployeeId(e.target.value)}
-                                className="appearance-none pl-4 pr-10 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 cursor-pointer"
-                            >
-                                <option value="all">All Employees</option>
-                                {employees.map(emp => (
-                                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                                ))}
-                            </select>
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <Users className="h-4 w-4 text-slate-400" />
+                        {/* Employee Assignment Filter (Admin Only) */}
+                        {role === 'admin' && (
+                            <div className="relative">
+                                <select
+                                    value={selectedEmployeeId}
+                                    onChange={(e) => setSelectedEmployeeId(e.target.value)}
+                                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 cursor-pointer"
+                                >
+                                    <option value="all">All Employees</option>
+                                    {employees.map(emp => (
+                                        <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <Users className="h-4 w-4 text-slate-400" />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Preset Buttons */}
                         <div className="flex items-center gap-1.5 p-1 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl overflow-hidden">
