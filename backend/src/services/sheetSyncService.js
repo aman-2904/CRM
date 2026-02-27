@@ -252,6 +252,7 @@ export async function runSync() {
                 notes: lead.notes,
                 status: 'new',
                 source,
+                source_url: csvUrl, // Record which sheet link this came from
                 assigned_to: assigned_to || null,
             };
             if (lead.created_at) record.created_at = lead.created_at;

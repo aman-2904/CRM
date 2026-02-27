@@ -4,7 +4,7 @@ export const getEmployees = async (req, res, next) => {
     try {
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, full_name, email, avatar_url')
+            .select('id, full_name, email, avatar_url, roles(name)')
             .order('full_name', { ascending: true });
 
         if (error) throw error;

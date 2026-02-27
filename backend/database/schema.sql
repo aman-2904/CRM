@@ -2,14 +2,14 @@
 create extension if not exists "uuid-ossp";
 
 -- ROLES TABLE
-create table public.roles (
+create table if not exists public.roles (
   id uuid primary key default uuid_generate_v4(),
   name text unique not null,
   description text
 );
 
 -- PROFILES TABLE (Extends auth.users)
-create table public.profiles (
+create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   role_id uuid references public.roles(id),
   full_name text,
@@ -21,7 +21,7 @@ create table public.profiles (
 );
 
 -- LEADS TABLE
-create table public.leads (
+create table if not exists public.leads (
   id uuid primary key default uuid_generate_v4(),
   assigned_to uuid references public.profiles(id),
   status text check (status in ('new', 'attempt_to_call', 'contacted', 'interested', 'converted', 'lost')) default 'new',
@@ -31,13 +31,14 @@ create table public.leads (
   phone text,
   company text,
   source text,
+  source_url text,
   notes text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
 -- DEALS TABLE
-create table public.deals (
+create table if not exists public.deals (
   id uuid primary key default uuid_generate_v4(),
   lead_id uuid references public.leads(id) on delete cascade,
   owner_id uuid references public.profiles(id),
@@ -50,7 +51,7 @@ create table public.deals (
 );
 
 -- FOLLOWUPS TABLE
-create table public.followups (
+create table if not exists public.followups (
   id uuid primary key default uuid_generate_v4(),
   assigned_to uuid references public.profiles(id),
   lead_id uuid references public.leads(id) on delete cascade,
@@ -63,7 +64,7 @@ create table public.followups (
 );
 
 -- ACTIVITIES TABLE
-create table public.activities (
+create table if not exists public.activities (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.profiles(id),
   lead_id uuid references public.leads(id) on delete set null,
@@ -74,17 +75,17 @@ create table public.activities (
 );
 
 -- INDEXES
-create index idx_profiles_role_id on public.profiles(role_id);
-create index idx_leads_assigned_to on public.leads(assigned_to);
-create index idx_leads_status on public.leads(status);
-create index idx_deals_lead_id on public.deals(lead_id);
-create index idx_deals_owner_id on public.deals(owner_id);
-create index idx_deals_stage on public.deals(stage);
-create index idx_followups_assigned_to on public.followups(assigned_to);
-create index idx_followups_scheduled_at on public.followups(scheduled_at);
-create index idx_activities_user_id on public.activities(user_id);
-create index idx_activities_lead_id on public.activities(lead_id);
-create index idx_activities_deal_id on public.activities(deal_id);
+create index if not exists idx_profiles_role_id on public.profiles(role_id);
+create index if not exists idx_leads_assigned_to on public.leads(assigned_to);
+create index if not exists idx_leads_status on public.leads(status);
+create index if not exists idx_deals_lead_id on public.deals(lead_id);
+create index if not exists idx_deals_owner_id on public.deals(owner_id);
+create index if not exists idx_deals_stage on public.deals(stage);
+create index if not exists idx_followups_assigned_to on public.followups(assigned_to);
+create index if not exists idx_followups_scheduled_at on public.followups(scheduled_at);
+create index if not exists idx_activities_user_id on public.activities(user_id);
+create index if not exists idx_activities_lead_id on public.activities(lead_id);
+create index if not exists idx_activities_deal_id on public.activities(deal_id);
 
 -- UPDATED_AT TRIGGER FUNCTION
 create or replace function public.handle_updated_at()
@@ -96,15 +97,19 @@ end;
 $$ language plpgsql;
 
 -- TRIGGERS FOR UPDATED_AT
+drop trigger if exists on_profiles_updated on public.profiles;
 create trigger on_profiles_updated before update on public.profiles
   for each row execute procedure public.handle_updated_at();
 
+drop trigger if exists on_leads_updated on public.leads;
 create trigger on_leads_updated before update on public.leads
   for each row execute procedure public.handle_updated_at();
 
+drop trigger if exists on_deals_updated on public.deals;
 create trigger on_deals_updated before update on public.deals
   for each row execute procedure public.handle_updated_at();
 
+drop trigger if exists on_followups_updated on public.followups;
 create trigger on_followups_updated before update on public.followups
   for each row execute procedure public.handle_updated_at();
 
@@ -130,6 +135,7 @@ end;
 $$ language plpgsql security definer;
 
 -- Trigger for auth.users
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();

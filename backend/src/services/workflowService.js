@@ -177,7 +177,11 @@ export async function getUnassignedLeadCount(days) {
 /**
  * Bulk unassign (revoke) leads created within X days.
  */
-export async function revokeLeads(days) {
+/**
+ * Set assigned_to to null for all leads in the timeframe.
+ * If employeeId is provided, ONLY revoke from that specific person.
+ */
+export async function revokeLeads(days, employeeId = null) {
     let startDate;
     if (days === 'all') {
         startDate = new Date(0);
@@ -187,13 +191,18 @@ export async function revokeLeads(days) {
         startDate.setHours(0, 0, 0, 0);
     }
 
-    // Set assigned_to to null for all leads in the timeframe (that have an assignment)
-    const { data, error } = await supabase
+    let query = supabase
         .from('leads')
         .update({ assigned_to: null })
-        .not('assigned_to', 'is', null) // Only update those currently assigned
-        .gte('created_at', startDate.toISOString())
-        .select('id');
+        .gte('created_at', startDate.toISOString());
+
+    if (employeeId && employeeId !== 'all') {
+        query = query.eq('assigned_to', employeeId);
+    } else {
+        query = query.not('assigned_to', 'is', null);
+    }
+
+    const { data, error } = await query.select('id');
 
     if (error) throw error;
     return data?.length || 0;
@@ -202,7 +211,7 @@ export async function revokeLeads(days) {
 /**
  * Get count of assigned leads in timeframe (candidates for revoke).
  */
-export async function getAssignedLeadCount(days) {
+export async function getAssignedLeadCount(days, employeeId = null) {
     let startDate;
     if (days === 'all') {
         startDate = new Date(0);
@@ -212,12 +221,38 @@ export async function getAssignedLeadCount(days) {
         startDate.setHours(0, 0, 0, 0);
     }
 
-    const { count, error } = await supabase
+    let query = supabase
         .from('leads')
         .select('*', { count: 'exact', head: true })
-        .not('assigned_to', 'is', null)
         .gte('created_at', startDate.toISOString());
+
+    if (employeeId && employeeId !== 'all') {
+        query = query.eq('assigned_to', employeeId);
+    } else {
+        query = query.not('assigned_to', 'is', null);
+    }
+
+    const { count, error } = await query;
 
     if (error) throw error;
     return count || 0;
+}
+
+/**
+ * Delete leads that were imported from sheet URLs that are NOT the current one.
+ */
+export async function purgeOldLeads() {
+    const currentUrl = process.env.GOOGLE_SHEET_CSV_URL;
+    if (!currentUrl) throw new Error('GOOGLE_SHEET_CSV_URL not configured');
+
+    const { data, error } = await supabase
+        .from('leads')
+        .delete()
+        .like('source', 'Google Sheet%')
+        // Wrap URL in double quotes to handle special characters (dots, commas, etc.)
+        .or(`source_url.is.null,source_url.neq."${currentUrl}"`)
+        .select('id');
+
+    if (error) throw error;
+    return data?.length || 0;
 }

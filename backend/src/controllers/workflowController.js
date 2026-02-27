@@ -5,7 +5,8 @@ import {
     bulkAssignLeads,
     getUnassignedLeadCount,
     revokeLeads,
-    getAssignedLeadCount
+    getAssignedLeadCount,
+    purgeOldLeads
 } from '../services/workflowService.js';
 
 // GET /api/workflow
@@ -90,8 +91,8 @@ export const runLeadRevoke = async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ success: false, error: 'Admins only' });
         }
-        const { timeframe } = req.body;
-        const count = await revokeLeads(timeframe);
+        const { timeframe, employeeId } = req.body;
+        const count = await revokeLeads(timeframe, employeeId);
         res.json({ success: true, count });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
@@ -101,8 +102,21 @@ export const runLeadRevoke = async (req, res) => {
 // GET /api/workflow/assigned-count
 export const getAssignedCount = async (req, res) => {
     try {
-        const { timeframe } = req.query;
-        const count = await getAssignedLeadCount(timeframe || 'all');
+        const { timeframe, employeeId } = req.query;
+        const count = await getAssignedLeadCount(timeframe || 'all', employeeId);
+        res.json({ success: true, count });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+// POST /api/workflow/purge-old-leads (admin only)
+export const runLeadPurge = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, error: 'Admins only' });
+        }
+        const count = await purgeOldLeads();
         res.json({ success: true, count });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });

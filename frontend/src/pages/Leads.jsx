@@ -255,7 +255,7 @@ const Leads = () => {
                                 Delete Selected ({selectedLeads.size})
                             </button>
                         )}
-                        {true && (
+                        {role === 'admin' && (
                             <button
                                 onClick={handleSyncSheet}
                                 disabled={syncing}
@@ -301,9 +301,11 @@ const Leads = () => {
                                     className="appearance-none pl-4 pr-10 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 cursor-pointer"
                                 >
                                     <option value="all">All Employees</option>
-                                    {employees.map(emp => (
-                                        <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                                    ))}
+                                    {employees
+                                        .filter(emp => emp.roles?.name !== 'admin')
+                                        .map(emp => (
+                                            <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                                        ))}
                                 </select>
                                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <Users className="h-4 w-4 text-slate-400" />
@@ -398,16 +400,14 @@ const Leads = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    {role === 'admin' && (
-                                        <th className="px-6 py-3 text-left">
-                                            <input
-                                                type="checkbox"
-                                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
-                                                checked={filteredLeads.length > 0 && selectedLeads.size === filteredLeads.length}
-                                                onChange={toggleSelectAll}
-                                            />
-                                        </th>
-                                    )}
+                                    <th className="px-6 py-3 text-left">
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                            checked={filteredLeads.length > 0 && selectedLeads.size === filteredLeads.length}
+                                            onChange={toggleSelectAll}
+                                        />
+                                    </th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Name</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Lead Date</th>
@@ -423,16 +423,14 @@ const Leads = () => {
                                         onClick={() => handleEditLead(lead)}
                                         className={`group hover:bg-blue-50/30 transition-all duration-300 cursor-pointer ${selectedLeads.has(lead.id) ? 'bg-blue-50/50' : ''}`}
                                     >
-                                        {role === 'admin' && (
-                                            <td className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                                                <input
-                                                    type="checkbox"
-                                                    className="rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500 h-4.5 w-4.5 transition-all cursor-pointer"
-                                                    checked={selectedLeads.has(lead.id)}
-                                                    onChange={() => toggleSelectLead(lead.id)}
-                                                />
-                                            </td>
-                                        )}
+                                        <td className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                            <input
+                                                type="checkbox"
+                                                className="rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500 h-4.5 w-4.5 transition-all cursor-pointer"
+                                                checked={selectedLeads.has(lead.id)}
+                                                onChange={() => toggleSelectLead(lead.id)}
+                                            />
+                                        </td>
                                         <td className="px-6 py-5 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className={`flex-shrink-0 h-11 w-11 rounded-2xl bg-gradient-to-br ${getAvatarGradient(lead.first_name)} flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-200/20 group-hover:scale-110 transition-transform duration-300 ring-2 ring-white`}>

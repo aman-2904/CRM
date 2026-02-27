@@ -53,6 +53,8 @@ const WorkflowManagement = () => {
     const [checkingCount, setCheckingCount] = useState(false);
     const [bulkRunning, setBulkRunning] = useState(false);
     const [revokeRunning, setRevokeRunning] = useState(false);
+    const [purgeRunning, setPurgeRunning] = useState(false);
+    const [revokeEmployeeId, setRevokeEmployeeId] = useState('all');
 
     // Load employees, settings, and discovered sheets
     useEffect(() => {
@@ -64,7 +66,7 @@ const WorkflowManagement = () => {
                     api.get('/workflow'),
                     api.get('/workflow/discovered-sheets'),
                     api.get(`/workflow/unassigned-count?timeframe=${bulkTimeframe}`),
-                    api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}`)
+                    api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}&employeeId=${revokeEmployeeId}`)
                 ]);
 
                 const emps = empRes.data.data || [];
@@ -91,7 +93,7 @@ const WorkflowManagement = () => {
         fetchData();
     }, []);
 
-    // Fetch count when timeframe changes (skipping first load which is handled above)
+    // Fetch count when timeframe or employee changes
     useEffect(() => {
         if (loading) return;
         const fetchCounts = async () => {
@@ -99,7 +101,7 @@ const WorkflowManagement = () => {
             try {
                 const [unRes, asRes] = await Promise.all([
                     api.get(`/workflow/unassigned-count?timeframe=${bulkTimeframe}`),
-                    api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}`)
+                    api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}&employeeId=${revokeEmployeeId}`)
                 ]);
                 setUnassignedCount(unRes.data.count || 0);
                 setAssignedCount(asRes.data.count || 0);
@@ -110,7 +112,7 @@ const WorkflowManagement = () => {
             }
         };
         fetchCounts();
-    }, [bulkTimeframe]);
+    }, [bulkTimeframe, revokeEmployeeId]);
 
     const handleRunBulkAssign = async () => {
         if (!unassignedCount) return;
@@ -122,7 +124,7 @@ const WorkflowManagement = () => {
             alert(`Success! Distributed ${res.data.count} leads.`);
             const [unRes, asRes] = await Promise.all([
                 api.get(`/workflow/unassigned-count?timeframe=${bulkTimeframe}`),
-                api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}`)
+                api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}&employeeId=${revokeEmployeeId}`)
             ]);
             setUnassignedCount(unRes.data.count || 0);
             setAssignedCount(asRes.data.count || 0);
@@ -136,15 +138,16 @@ const WorkflowManagement = () => {
 
     const handleRunRevoke = async () => {
         if (!assignedCount) return;
-        if (!window.confirm(`Are you sure you want to REVOKE (unassign) ${assignedCount} leads from this timeframe? They will be returned to the unassigned pool.`)) return;
+        const empName = revokeEmployeeId === 'all' ? 'ALL employees' : getEmployeeName(revokeEmployeeId);
+        if (!window.confirm(`Are you sure you want to REVOKE ${assignedCount} leads from ${empName}? They will be returned to the unassigned pool.`)) return;
 
         setRevokeRunning(true);
         try {
-            const res = await api.post('/workflow/revoke', { timeframe: bulkTimeframe });
+            const res = await api.post('/workflow/revoke', { timeframe: bulkTimeframe, employeeId: revokeEmployeeId });
             alert(`Success! Revoked ${res.data.count} leads.`);
             const [unRes, asRes] = await Promise.all([
                 api.get(`/workflow/unassigned-count?timeframe=${bulkTimeframe}`),
-                api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}`)
+                api.get(`/workflow/assigned-count?timeframe=${bulkTimeframe}&employeeId=${revokeEmployeeId}`)
             ]);
             setUnassignedCount(unRes.data.count || 0);
             setAssignedCount(asRes.data.count || 0);
@@ -153,6 +156,22 @@ const WorkflowManagement = () => {
             alert('Lead revoke failed');
         } finally {
             setRevokeRunning(false);
+        }
+    };
+
+    const handleRunPurge = async () => {
+        if (!window.confirm("This will permanently DELETE all leads that were imported from Google Sheet links OTHER than your current active one. Leads added manually or from the current link will be kept. Proceed?")) return;
+
+        setPurgeRunning(true);
+        try {
+            const res = await api.post('/workflow/purge-old-leads');
+            alert(`Success! Deleted ${res.data.count} old leads.`);
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            alert('Purge failed');
+        } finally {
+            setPurgeRunning(false);
         }
     };
 
@@ -397,14 +416,44 @@ const WorkflowManagement = () => {
 
                         {/* Actions & Info Footer */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-100">
-                            <div className="flex items-center gap-2">
-                                <Zap className="h-4 w-4 text-amber-500 fill-amber-500" />
-                                <p className="text-xs font-medium text-slate-500">
-                                    Uses active <span className="text-slate-900 font-bold">{distributionType.replace('_', ' ')}</span> rules.
-                                </p>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="h-4 w-4 text-amber-500 fill-amber-500" />
+                                    <p className="text-xs font-medium text-slate-500">
+                                        Uses active <span className="text-slate-900 font-bold">{distributionType.replace('_', ' ')}</span> rules.
+                                    </p>
+                                </div>
+
+                                <div className="h-8 w-[1px] bg-slate-100 hidden sm:block" />
+
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Revoke From:</span>
+                                    <select
+                                        value={revokeEmployeeId}
+                                        onChange={(e) => setRevokeEmployeeId(e.target.value)}
+                                        className="text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    >
+                                        <option value="all">All Employees</option>
+                                        {availableEmployees
+                                            .filter(emp => emp.roles?.name !== 'admin')
+                                            .map(emp => (
+                                                <option key={emp.id} value={emp.id}>{emp.full_name || emp.email}</option>
+                                            ))}
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="flex gap-3">
+                                <button
+                                    onClick={handleRunPurge}
+                                    disabled={purgeRunning}
+                                    title="Delete leads from inactive sheet links"
+                                    className="h-11 px-4 rounded-xl text-xs font-bold flex items-center gap-2 bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all border border-slate-200"
+                                >
+                                    <Trash2 className={`h-4 w-4 ${purgeRunning ? 'animate-spin' : ''}`} />
+                                    <span>Purge Old Data</span>
+                                </button>
+
                                 <button
                                     onClick={handleRunRevoke}
                                     disabled={assignedCount === 0 || revokeRunning}
