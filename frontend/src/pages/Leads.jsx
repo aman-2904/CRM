@@ -4,7 +4,7 @@ import LeadFormModal from '../components/Leads/LeadFormModal';
 import DealModal from '../components/Deals/DealModal';
 import TaskModal from '../components/Tasks/TaskModal';
 import api from '../services/api';
-import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calendar, X } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calendar, X, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Leads = () => {
@@ -26,6 +26,7 @@ const Leads = () => {
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [leadToFollowup, setLeadToFollowup] = useState(null);
     const [employees, setEmployees] = useState([]);
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState('all');
 
     const applyPreset = (preset) => {
         setDatePreset(preset);
@@ -176,7 +177,10 @@ const Leads = () => {
             }
         }
 
-        return matchesSearch && matchesDate;
+        // Assignment filter
+        const matchesAssignment = selectedEmployeeId === 'all' || lead.assigned_to === selectedEmployeeId;
+
+        return matchesSearch && matchesDate && matchesAssignment;
     }).sort((a, b) => {
         const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
         const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
@@ -288,6 +292,23 @@ const Leads = () => {
                             />
                         </div>
 
+                        {/* Employee Assignment Filter */}
+                        <div className="relative">
+                            <select
+                                value={selectedEmployeeId}
+                                onChange={(e) => setSelectedEmployeeId(e.target.value)}
+                                className="appearance-none pl-4 pr-10 py-2.5 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 cursor-pointer"
+                            >
+                                <option value="all">All Employees</option>
+                                {employees.map(emp => (
+                                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <Users className="h-4 w-4 text-slate-400" />
+                            </div>
+                        </div>
+
                         {/* Preset Buttons */}
                         <div className="flex items-center gap-1.5 p-1 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl overflow-hidden">
                             {[['all', 'All'], ['today', 'Today'], ['yesterday', 'Yesterday'], ['7days', '7d'], ['30days', '30d'], ['custom', 'Custom']].map(([key, label]) => (
@@ -389,6 +410,7 @@ const Leads = () => {
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Lead Date</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Source</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Assigned To</th>
                                     <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase">Actions</th>
                                 </tr>
                             </thead>
@@ -440,10 +462,19 @@ const Leads = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-slate-500">
-                                            {lead.created_at ? new Date(lead.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                                            {lead.created_at ? new Date(lead.created_at).toLocaleString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }) : '-'}
                                         </td>
                                         <td className="px-6 py-5 text-sm font-semibold text-slate-800 leading-relaxed">
                                             {lead.source || '-'}
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-slate-600">
+                                            {lead.profiles?.full_name || 'Unassigned'}
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end space-x-1 transition-all duration-300">
