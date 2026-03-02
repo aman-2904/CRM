@@ -33,13 +33,11 @@ const DashboardLayout = ({ children }) => {
         { name: 'Workflow', href: '/admin/workflow', icon: GitBranch },
         { name: 'Reports', href: '/admin/reports', icon: PieChart },
         { name: 'Activity', href: '/admin/activity', icon: CheckSquare },
-        { name: 'Profile', href: '/profile', icon: Settings },
     ] : [
         { name: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'My Leads', href: '/dashboard/leads', icon: Users },
         { name: 'Deals', href: '/dashboard/deals', icon: Briefcase },
         { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
-        { name: 'Profile', href: '/profile', icon: Settings },
     ];
 
     return (
@@ -87,7 +85,11 @@ const DashboardLayout = ({ children }) => {
                 <div className="flex-1 flex flex-col overflow-y-auto">
                     {/* User Profile Card */}
                     <div className="px-4 py-6">
-                        <div className="group flex items-center p-3.5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300 shadow-sm">
+                        <Link
+                            to="/profile"
+                            onClick={() => setSidebarOpen(false)}
+                            className="group flex items-center p-3.5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300 shadow-sm cursor-pointer"
+                        >
                             <div className="flex-shrink-0 relative">
                                 {profile?.avatar_url ? (
                                     <img
@@ -108,7 +110,7 @@ const DashboardLayout = ({ children }) => {
                                 </p>
                                 <p className="text-xs font-medium text-slate-500 capitalize">{role}</p>
                             </div>
-                        </div>
+                        </Link>
                     </div>
 
                     {/* Navigation */}
