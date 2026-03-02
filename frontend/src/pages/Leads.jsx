@@ -374,7 +374,7 @@ const Leads = () => {
 
 
             {/* Leads Table Container */}
-            <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-slate-200/50 sm:rounded-3xl overflow-hidden transition-all duration-500">
+            <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-slate-200/50 sm:rounded-3xl overflow-x-auto transition-all duration-500">
                 <div className="min-w-full divide-y divide-slate-100">
                     {loading ? (
                         <div className="p-20 flex flex-col items-center justify-center space-y-4">
@@ -405,7 +405,7 @@ const Leads = () => {
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Lead Date</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Source</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Assigned To</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase">Actions</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase min-w-[140px]">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -468,8 +468,8 @@ const Leads = () => {
                                         <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-slate-600">
                                             {lead.profiles?.full_name || 'Unassigned'}
                                         </td>
-                                        <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
-                                            <div className="flex items-center justify-end space-x-1 transition-all duration-300">
+                                        <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium min-w-[140px]" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex items-center justify-end space-x-1">
                                                 <button onClick={() => handleEditLead(lead)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit Lead">
                                                     <Edit2 className="h-4.5 w-4.5" />
                                                 </button>
@@ -527,7 +527,7 @@ const Leads = () => {
                     setTimeout(() => setSyncMsg(null), 3000);
                 }}
             />
-        </DashboardLayout>
+        </DashboardLayout >
     );
 };
 
