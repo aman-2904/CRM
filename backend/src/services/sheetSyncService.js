@@ -122,8 +122,19 @@ async function fetchAllRows(fetch, baseUrl) {
     const pubBase = baseUrl.split('?')[0];
 
     // 1. Fetch HTML index page to discover sheet GIDs
+    //    If it fails (e.g. 401), fall back to using the provided CSV URL directly
     const htmlRes = await fetch(pubBase);
-    if (!htmlRes.ok) throw new Error(`Failed to fetch spreadsheet page: ${htmlRes.status}`);
+    if (!htmlRes.ok) {
+        console.warn(`[SheetSync] HTML page fetch returned ${htmlRes.status}. Falling back to direct CSV URL.`);
+        // Fall back: just fetch the original URL as a CSV directly
+        const csvRes = await fetch(baseUrl);
+        if (!csvRes.ok) throw new Error(`Failed to fetch spreadsheet CSV: ${csvRes.status}`);
+        const csvText = await csvRes.text();
+        if (csvText.trimStart().startsWith('<!')) throw new Error('Spreadsheet is not publicly published. Please publish to web via File → Share → Publish to web.');
+        const rows = parse(csvText, { columns: true, skip_empty_lines: true, trim: true });
+        console.log(`[SheetSync] Fallback CSV fetch: ${rows.length} row(s)`);
+        return rows;
+    }
     const html = await htmlRes.text();
 
     // Extract all gid values from the published HTML (e.g. gid=0, gid=12345678)
