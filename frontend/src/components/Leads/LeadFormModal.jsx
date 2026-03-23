@@ -283,6 +283,8 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
                                                         <option value="attempt_to_call">Attempt to Call</option>
                                                         <option value="contacted">Contacted</option>
                                                         <option value="interested">Interested</option>
+                                                        <option value="qualified">Qualified</option>
+                                                        <option value="non_qualified">Non qualified</option>
                                                         <option value="converted">Converted</option>
                                                         <option value="lost">Lost</option>
                                                     </select>

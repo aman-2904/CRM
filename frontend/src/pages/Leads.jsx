@@ -194,6 +194,8 @@ const Leads = () => {
             case 'attempt_to_call': return 'bg-orange-50 text-orange-600 border-orange-100 shadow-[0_0_8px_rgba(234,88,12,0.2)]';
             case 'contacted': return 'bg-amber-50 text-amber-600 border-amber-100 shadow-[0_0_8px_rgba(245,158,11,0.2)]';
             case 'interested': return 'bg-purple-50 text-purple-600 border-purple-100 shadow-[0_0_8px_rgba(168,85,247,0.2)]';
+            case 'qualified': return 'bg-teal-50 text-teal-600 border-teal-100 shadow-[0_0_8px_rgba(20,184,166,0.2)]';
+            case 'non_qualified': return 'bg-rose-50 text-rose-600 border-rose-100 shadow-[0_0_8px_rgba(244,63,94,0.2)]';
             case 'converted': return 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-[0_0_8px_rgba(16,185,129,0.2)]';
             case 'lost': return 'bg-slate-50 text-slate-500 border-slate-200';
             default: return 'bg-gray-50 text-gray-500 border-gray-200';
