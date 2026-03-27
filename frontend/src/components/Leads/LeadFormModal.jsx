@@ -26,6 +26,7 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
     const [selectedTask, setSelectedTask] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
+    const [sheetNotes, setSheetNotes] = useState('');
 
     useEffect(() => {
         // Reset tab when modal opens or lead changes
@@ -55,6 +56,21 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
 
     useEffect(() => {
         if (leadToEdit) {
+            let parsedManualNotes = leadToEdit.notes || '';
+            let extractedSheetNotes = '';
+
+            if (leadToEdit.source?.startsWith('Google Sheet')) {
+                if (leadToEdit.notes?.includes('\n--- MANUAL NOTES ---\n')) {
+                    const parts = leadToEdit.notes.split('\n--- MANUAL NOTES ---\n');
+                    extractedSheetNotes = parts[0];
+                    parsedManualNotes = parts.slice(1).join('\n--- MANUAL NOTES ---\n');
+                } else {
+                    extractedSheetNotes = leadToEdit.notes || '';
+                    parsedManualNotes = '';
+                }
+            }
+
+            setSheetNotes(extractedSheetNotes);
             setFormData({
                 first_name: leadToEdit.first_name || '',
                 last_name: leadToEdit.last_name || '',
@@ -63,10 +79,11 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
                 company: leadToEdit.company || '',
                 status: leadToEdit.status || 'new',
                 source: leadToEdit.source || '',
-                notes: leadToEdit.notes || '',
+                notes: parsedManualNotes,
                 assigned_to: leadToEdit.assigned_to || null,
             });
         } else {
+            setSheetNotes('');
             setFormData({
                 first_name: '',
                 last_name: '',
@@ -92,9 +109,19 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
         setError('');
 
         try {
+            let finalNotes = formData.notes;
+            if (leadToEdit?.source?.startsWith('Google Sheet') && sheetNotes) {
+                if (formData.notes && formData.notes.trim() !== '') {
+                    finalNotes = `${sheetNotes}\n--- MANUAL NOTES ---\n${formData.notes}`;
+                } else {
+                    finalNotes = sheetNotes;
+                }
+            }
+
             // Convert empty string to null for UUID fields
             const payload = {
                 ...formData,
+                notes: finalNotes,
                 assigned_to: formData.assigned_to || null,
             };
             if (leadToEdit) {
@@ -309,13 +336,13 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
                                         </div>
                                     </div>
 
-                                    {leadToEdit?.source?.startsWith('Google Sheet') && (
+                                    {leadToEdit?.source?.startsWith('Google Sheet') && sheetNotes && (
                                         <div className="pt-2">
                                             <h4 className="text-xs font-black text-amber-600 uppercase tracking-widest mb-4 flex items-center">
                                                 <span className="w-6 h-px bg-amber-100 mr-2" /> Sheet Information
                                             </h4>
                                             <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 grid grid-cols-1 gap-3">
-                                                {leadToEdit.notes?.split('|').filter(part => part.includes(':')).map((part, i) => {
+                                                {sheetNotes.split('|').filter(part => part.includes(':')).map((part, i) => {
                                                     const [label, ...valParts] = part.split(':');
                                                     const value = valParts.join(':').trim();
                                                     const cleanLabel = label.trim().replace(/_/g, ' ').replace(/\?|:|_/g, '');
