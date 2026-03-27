@@ -8,6 +8,81 @@ import { Plus, Search, Edit2, Trash2, Phone, Mail, IndianRupee, RefreshCw, Calen
 import { useAuth } from '../context/AuthContext';
 import CustomDropdown from '../components/Common/CustomDropdown';
 
+const StatusBadgeDropdown = ({ lead, handleStatusChange, getStatusColor }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = React.useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const statuses = [
+        { value: 'new', label: 'New' },
+        { value: 'attempt_to_call', label: 'Attempt to Call' },
+        { value: 'contacted', label: 'Contacted' },
+        { value: 'interested', label: 'Interested' },
+        { value: 'qualified', label: 'Qualified' },
+        { value: 'non_qualified', label: 'Non qualified' },
+        { value: 'converted', label: 'Converted' },
+        { value: 'lost', label: 'Lost' },
+    ];
+
+    return (
+        <div className="relative inline-block text-left" ref={containerRef} onClick={(e) => e.stopPropagation()}>
+            <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+                className={`px-3 py-1.5 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold rounded-full capitalize transition-all duration-300 outline-none cursor-pointer hover:shadow-md active:scale-95 border ${getStatusColor(lead.status)}`}
+            >
+                <span>{lead.status.replace(/_/g, ' ')}</span>
+                <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div 
+                    className="absolute z-[100] mt-2 min-w-[150px] left-0 origin-top-left rounded-2xl bg-white/95 backdrop-blur-xl shadow-2xl shadow-blue-900/10 border border-slate-100 p-1.5 animate-in fade-in zoom-in-95 duration-200 overflow-hidden text-left"
+                    style={{ minWidth: 'max-content' }}
+                >
+                    <div className="flex flex-col gap-1 max-h-60 overflow-y-auto custom-scrollbar">
+                        {statuses.map((s) => (
+                            <button
+                                key={s.value}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsOpen(false);
+                                    if (lead.status !== s.value) {
+                                        handleStatusChange(e, lead.id, s.value);
+                                    }
+                                }}
+                                className={`w-full flex items-center justify-between gap-3 px-3 py-2 text-[11px] sm:text-xs font-bold rounded-xl transition-all duration-200
+                                    ${lead.status === s.value 
+                                        ? 'bg-blue-50/80 text-blue-700' 
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                    }
+                                `}
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${lead.status === s.value ? 'bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.6)]' : 'bg-slate-300'}`} />
+                                    {s.label}
+                                </div>
+                                {lead.status === s.value && (
+                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Leads = () => {
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -487,21 +562,11 @@ const Leads = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-3 sm:px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                                                    <select
-                                                        value={lead.status}
-                                                        onChange={(e) => handleStatusChange(e, lead.id, e.target.value)}
-                                                        className={`px-2 py-0.5 border inline-flex text-[10px] font-bold rounded-full capitalize transition-all duration-300 outline-none cursor-pointer appearance-none text-center ${getStatusColor(lead.status)}`}
-                                                        style={{ textAlignLast: 'center' }}
-                                                    >
-                                                        <option className="text-slate-900 bg-white font-medium" value="new">New</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="attempt_to_call">Attempt to Call</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="contacted">Contacted</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="interested">Interested</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="qualified">Qualified</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="non_qualified">Non qualified</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="converted">Converted</option>
-                                                        <option className="text-slate-900 bg-white font-medium" value="lost">Lost</option>
-                                                    </select>
+                                                    <StatusBadgeDropdown
+                                                        lead={lead}
+                                                        handleStatusChange={handleStatusChange}
+                                                        getStatusColor={getStatusColor}
+                                                    />
                                                 </td>
                                                 <td className="px-3 sm:px-6 py-4 text-[11px] sm:text-xs font-medium text-slate-500">
                                                     {lead.created_at ? new Date(lead.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
@@ -570,20 +635,11 @@ const Leads = () => {
                                                 >
                                                     <h3 className="text-base font-bold text-slate-900 leading-tight group-hover/card-name:text-blue-600 transition-colors">{lead.first_name} {lead.last_name}</h3>
                                                     <div onClick={(e) => e.stopPropagation()}>
-                                                        <select
-                                                            value={lead.status}
-                                                            onChange={(e) => handleStatusChange(e, lead.id, e.target.value)}
-                                                            className={`mt-1 px-2.5 py-0.5 border inline-flex text-[10px] font-bold rounded-full capitalize outline-none cursor-pointer appearance-none ${getStatusColor(lead.status)}`}
-                                                        >
-                                                            <option className="text-slate-900 bg-white font-medium" value="new">New</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="attempt_to_call">Attempt to Call</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="contacted">Contacted</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="interested">Interested</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="qualified">Qualified</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="non_qualified">Non qualified</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="converted">Converted</option>
-                                                            <option className="text-slate-900 bg-white font-medium" value="lost">Lost</option>
-                                                        </select>
+                                                        <StatusBadgeDropdown
+                                                            lead={lead}
+                                                            handleStatusChange={handleStatusChange}
+                                                            getStatusColor={getStatusColor}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
