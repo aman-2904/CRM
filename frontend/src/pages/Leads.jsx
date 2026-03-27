@@ -103,6 +103,36 @@ const Leads = () => {
         setIsModalOpen(true);
     };
 
+    const handleStatusChange = async (e, leadId, newStatus) => {
+        e.stopPropagation();
+        try {
+            const leadToUpdate = leads.find(l => l.id === leadId);
+            if (!leadToUpdate) return;
+            
+            const payload = {
+                first_name: leadToUpdate.first_name,
+                last_name: leadToUpdate.last_name,
+                email: leadToUpdate.email,
+                phone: leadToUpdate.phone,
+                company: leadToUpdate.company,
+                status: newStatus,
+                source: leadToUpdate.source,
+                notes: leadToUpdate.notes,
+                assigned_to: leadToUpdate.assigned_to || null,
+            };
+            
+            // Optimistic update
+            setLeads(prevLeads => prevLeads.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+            
+            await api.put(`/leads/${leadId}`, payload);
+            fetchLeads(); // Refresh leads in background to ensure consistency
+        } catch (error) {
+            console.error('Error updating status:', error);
+            alert('Failed to update status');
+            fetchLeads(); // Revert on failure
+        }
+    };
+
     const handleDeleteLead = async (id) => {
         if (!window.confirm('Are you sure you want to delete this lead?')) return;
         try {
@@ -456,10 +486,22 @@ const Leads = () => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-4">
-                                                    <span className={`px-2 py-0.5 border inline-flex text-[9px] font-bold rounded-full capitalize transition-all duration-300 ${getStatusColor(lead.status)}`}>
-                                                        {lead.status}
-                                                    </span>
+                                                <td className="px-3 sm:px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                                                    <select
+                                                        value={lead.status}
+                                                        onChange={(e) => handleStatusChange(e, lead.id, e.target.value)}
+                                                        className={`px-2 py-0.5 border inline-flex text-[10px] font-bold rounded-full capitalize transition-all duration-300 outline-none cursor-pointer appearance-none text-center ${getStatusColor(lead.status)}`}
+                                                        style={{ textAlignLast: 'center' }}
+                                                    >
+                                                        <option className="text-slate-900 bg-white font-medium" value="new">New</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="attempt_to_call">Attempt to Call</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="contacted">Contacted</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="interested">Interested</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="qualified">Qualified</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="non_qualified">Non qualified</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="converted">Converted</option>
+                                                        <option className="text-slate-900 bg-white font-medium" value="lost">Lost</option>
+                                                    </select>
                                                 </td>
                                                 <td className="px-3 sm:px-6 py-4 text-[11px] sm:text-xs font-medium text-slate-500">
                                                     {lead.created_at ? new Date(lead.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
@@ -527,9 +569,22 @@ const Leads = () => {
                                                     title="View Lead Details"
                                                 >
                                                     <h3 className="text-base font-bold text-slate-900 leading-tight group-hover/card-name:text-blue-600 transition-colors">{lead.first_name} {lead.last_name}</h3>
-                                                    <span className={`mt-1 px-2.5 py-0.5 border inline-flex text-[10px] font-bold rounded-full capitalize ${getStatusColor(lead.status)}`}>
-                                                        {lead.status}
-                                                    </span>
+                                                    <div onClick={(e) => e.stopPropagation()}>
+                                                        <select
+                                                            value={lead.status}
+                                                            onChange={(e) => handleStatusChange(e, lead.id, e.target.value)}
+                                                            className={`mt-1 px-2.5 py-0.5 border inline-flex text-[10px] font-bold rounded-full capitalize outline-none cursor-pointer appearance-none ${getStatusColor(lead.status)}`}
+                                                        >
+                                                            <option className="text-slate-900 bg-white font-medium" value="new">New</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="attempt_to_call">Attempt to Call</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="contacted">Contacted</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="interested">Interested</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="qualified">Qualified</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="non_qualified">Non qualified</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="converted">Converted</option>
+                                                            <option className="text-slate-900 bg-white font-medium" value="lost">Lost</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
