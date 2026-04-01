@@ -14,14 +14,13 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
     (config) => {
         // Find the Supabase token in localStorage
-        // Supabase keys usually look like 'sb-XXX-auth-token'
         const supabaseKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
         const sessionStr = localStorage.getItem(supabaseKey);
 
         if (sessionStr) {
             try {
                 const session = JSON.parse(sessionStr);
-                const token = session.access_token;
+                const token = session?.access_token;
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
@@ -40,18 +39,25 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        // Only redirect on actual auth errors, but don't be too aggressive
         if (error.response?.status === 401) {
-            console.warn('Unauthorized request detected. If this persists, please log in again.');
-            // Optional: Uncomment to force logout on every 401
-            // const supabaseKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
-            // localStorage.removeItem(supabaseKey);
-            // window.location.href = '/login';
+            console.warn('Unauthorized request detected.');
         }
-        const message = error.response?.data?.error || error.message || 'An error occurred';
-        console.error('API Error:', message);
         return Promise.reject(error);
     }
 );
 
-export default apiClient;
+// API Methods
+export const api = {
+    get: (url, config) => apiClient.get(url, config),
+    post: (url, data, config) => apiClient.post(url, data, config),
+    put: (url, data, config) => apiClient.put(url, data, config),
+    patch: (url, data, config) => apiClient.patch(url, data, config),
+    delete: (url, config) => apiClient.delete(url, config),
+
+    // Notes
+    getLeadNotes: (leadId) => apiClient.get(`/notes/leads/${leadId}`),
+    createNote: (noteData) => apiClient.post('/notes', noteData),
+    deleteNote: (noteId) => apiClient.delete(`/notes/${noteId}`),
+};
+
+export default api;

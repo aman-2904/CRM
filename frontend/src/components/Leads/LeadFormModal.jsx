@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import api from '../../services/api';
 import { cn } from '../../utils/cn';
 import LeadCalendar from './LeadCalendar';
+import LeadNotes from './LeadNotes';
 import TaskModal from '../Tasks/TaskModal';
 
 const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: employeesProp, initialTab = 'profile' }) => {
@@ -361,19 +362,14 @@ const LeadFormModal = ({ isOpen, onClose, leadToEdit, onSuccess, employees: empl
                                         </div>
                                     )}
 
-                                    <div className="pt-2">
-                                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
-                                            <span className="w-6 h-px bg-slate-100 mr-2" /> Manual Notes
-                                        </h4>
-                                        <textarea
-                                            name="notes"
-                                            rows={3}
-                                            value={formData.notes}
-                                            onChange={handleChange}
-                                            placeholder="Add any additional details..."
-                                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none placeholder:text-slate-300"
-                                        />
-                                    </div>
+                                    {leadToEdit && (
+                                        <div className="pt-2">
+                                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                                                <span className="w-6 h-px bg-slate-100 mr-2" /> Manual Notes
+                                            </h4>
+                                            <LeadNotes leadId={leadToEdit.id} />
+                                        </div>
+                                    )}
 
                                     <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-slate-100">
                                         <button

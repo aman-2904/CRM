@@ -8,6 +8,7 @@ import reportsRouter from './reports.js';
 import activitiesRouter from './activities.js';
 import sheetsRouter from './sheets.js';
 import workflowRouter from './workflowRoutes.js';
+import notesRouter from './notes.js';
 
 const router = express.Router();
 
@@ -29,5 +30,6 @@ router.use('/reports', reportsRouter);
 router.use('/activities', activitiesRouter);
 router.use('/sheets', sheetsRouter);
 router.use('/workflow', workflowRouter);
+router.use('/notes', notesRouter);
 
 export default router;
